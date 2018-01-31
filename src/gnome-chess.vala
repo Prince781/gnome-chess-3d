@@ -207,7 +207,7 @@ Copyright © 2015–2016 Sahil Sareen""";
         view_container.add_named (view, "2d-view");
         view.show ();
 
-        var view3d = new ChessView3D();
+        var view3d = new ChessView3d();
         view3d.set_size_request (400, 400);
         view_container.add_named (view3d, "3d-view");
         view3d.show ();
