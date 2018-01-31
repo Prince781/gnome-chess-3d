@@ -20,7 +20,7 @@ public class ChessApplication : Gtk.Application
 
     private Settings settings;
     private Gtk.ApplicationWindow window;
-    private Gtk.Container view_container;
+    private Gtk.Stack view_container;
     private ChessScene scene;
     private ChessView view;
     private Gtk.Button pause_resume_button;
@@ -33,6 +33,7 @@ public class ChessApplication : Gtk.Application
     private Gtk.Widget black_time_label;
     private Gtk.Widget timer_increment_label;
     private Gtk.HeaderBar headerbar;
+    private Gtk.ToggleButton toggle_3d_view;
 
     private Gtk.Dialog? preferences_dialog = null;
     private Gtk.ComboBox side_combo;
@@ -163,9 +164,19 @@ Copyright © 2015–2016 Sahil Sareen""";
         history_combo = (Gtk.ComboBox) builder.get_object ("history_combo");
         white_time_label = (Gtk.Widget) builder.get_object ("white_time_label");
         black_time_label = (Gtk.Widget) builder.get_object ("black_time_label");
-        view_container = (Gtk.Container) builder.get_object ("view_container");
+        view_container = (Gtk.Stack) builder.get_object ("view_container");
+        toggle_3d_view = (Gtk.ToggleButton) builder.get_object ("toggle_3d_view");
         headerbar = (Gtk.HeaderBar) builder.get_object ("headerbar");
         builder.connect_signals (this);
+
+        settings.bind ("show-3d", toggle_3d_view, "active", SettingsBindFlags.DEFAULT);
+
+        toggle_3d_view.toggled.connect(() => {
+            if (toggle_3d_view.active)
+                view_container.visible_child_name = "3d-view";
+            else
+                view_container.visible_child_name = "2d-view";
+        });
 
         update_pause_resume_button ();
 
@@ -193,8 +204,15 @@ Copyright © 2015–2016 Sahil Sareen""";
         view = new ChessView ();
         view.set_size_request (400, 400);
         view.scene = scene;
-        view_container.add (view);
+        view_container.add_named (view, "2d-view");
         view.show ();
+
+        var view3d = new ChessView3D();
+        view3d.set_size_request (400, 400);
+        view_container.add_named (view3d, "3d-view");
+        view3d.show ();
+
+        view_container.visible_child_name = "2d-view";
 
         var system_engine_cfg = Path.build_filename (SYSCONFDIR, "gnome-chess", "engines.conf", null);
         var user_engine_cfg = Path.build_filename (Environment.get_user_config_dir (), "gnome-chess", "engines.conf", null);

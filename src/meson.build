@@ -17,6 +17,7 @@ chess_sources = [
   'chess-engine.vala',
   'chess-scene.vala',
   'chess-view.vala',
+  'chess-view3d.vala',
   'gnome-chess.vala',
 ]
 

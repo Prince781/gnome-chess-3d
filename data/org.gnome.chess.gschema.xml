@@ -118,5 +118,10 @@
       <summary>Difficulty of the opponent chess engine</summary>
       <description>Difficulty of the opponent chess engine</description>
     </key>
+    <key name="show-3d" type="b">
+      <default>false</default>
+      <summary>Show the 3D view.</summary>
+      <description>Whether to show the 3D OpenGL view.</description>
+    </key>
   </schema>
 </schemalist>
