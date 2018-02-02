@@ -1,4 +1,6 @@
 #include "chess-view-3d.h"
+#include <epoxy/gl.h>
+#include "math_3d.h"
 
 typedef struct
 {
@@ -30,9 +32,9 @@ chess_view3d_finalize (GObject *object)
 
 static void
 chess_view3d_get_property (GObject    *object,
-                            guint       prop_id,
-                            GValue     *value,
-                            GParamSpec *pspec)
+                           guint       prop_id,
+                           GValue     *value,
+                           GParamSpec *pspec)
 {
 	ChessView3d *self = CHESS_VIEW3D (object);
 
@@ -45,9 +47,9 @@ chess_view3d_get_property (GObject    *object,
 
 static void
 chess_view3d_set_property (GObject      *object,
-                            guint         prop_id,
-                            const GValue *value,
-                            GParamSpec   *pspec)
+                           guint         prop_id,
+                           const GValue *value,
+                           GParamSpec   *pspec)
 {
 	ChessView3d *self = CHESS_VIEW3D (object);
 
@@ -68,7 +70,16 @@ chess_view3d_class_init (ChessView3dClass *klass)
 	object_class->set_property = chess_view3d_set_property;
 }
 
+static gboolean
+render (GtkGLArea    *area,
+        GdkGLContext *context)
+{
+	/* TODO: render things */
+	return TRUE;
+}
+
 static void
 chess_view3d_init (ChessView3d *self)
 {
+	g_signal_connect (self, "render", G_CALLBACK (render), NULL);
 }
