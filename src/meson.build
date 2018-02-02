@@ -11,13 +11,15 @@ chess_sources = [
   'portability.c',
   'portability.vapi',
 
+  'chess-view-3d.c',
+  'gl-util.c',
+
   'ai-profile.vala',
   'chess-engine-cecp.vala',
   'chess-engine-uci.vala',
   'chess-engine.vala',
   'chess-scene.vala',
   'chess-view.vala',
-  'chess-view-3d.c',
   'chess-view-3d.vapi',
   'gnome-chess.vala',
 ]
@@ -37,6 +39,7 @@ chess_deps = [
   librsvg,
   posix,
   libchess_dep,
+  epoxy
 ]
 
 executable('gnome-chess', chess_sources,

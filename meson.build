@@ -32,6 +32,7 @@ gio = dependency('gio-unix-2.0', version: '>=' + min_glib_version)
 glib = dependency('glib-2.0', version: '>=' + min_glib_version)
 gmodule = dependency('gmodule-2.0', version: '>=' + min_glib_version)
 gtk = dependency('gtk+-3.0', version: '>= 3.19.0')
+epoxy = meson.get_compiler('c').find_library('epoxy', version: '>= 1.4')
 librsvg = dependency('librsvg-2.0', version: '>= 2.32.0')
 
 posix = meson.get_compiler('vala').find_library('posix')
