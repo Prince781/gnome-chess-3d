@@ -218,6 +218,7 @@ load_OBJ(const char  *filename,
   GArray *temp_verts = g_array_new (false, false, sizeof (vec3_t));
   GArray *temp_uvs = g_array_new (false, false, sizeof (GLfloat[2]));
   GArray *temp_normals = g_array_new (false, false, sizeof (vec3_t));
+  vec3_t avg_vert = vec3(0,0,0);
 
   GArray *tris = g_array_new (false, false, sizeof (int[3][3]));
 
@@ -242,6 +243,8 @@ load_OBJ(const char  *filename,
 
       sscanf(line, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
       g_array_append_val (temp_verts, vertex);
+
+      avg_vert = v3_add (avg_vert, vertex);
     } else if (strncmp(line, "vt", space - line) == 0) {
       GLfloat uv[2];
 
@@ -286,6 +289,8 @@ load_OBJ(const char  *filename,
     goto end;
   }
 
+  avg_vert = v3_divs (avg_vert, temp_verts->len);
+
   /* Create the object.
    * 1. for all faces f in F:
    *  1a. for all points p in f: (vert_idx,uv_idx,normal_idx) = p
@@ -307,6 +312,7 @@ load_OBJ(const char  *filename,
       vec3_t v = ((vec3_t *) temp_verts->data)[triangle[p][0] - 1];
       vec3_t n = ((vec3_t *) temp_normals->data)[triangle[p][2] - 1];
 
+      v = v3_sub (v, avg_vert);
       g_debug ("adding point %d//%d", triangle[p][0], triangle[p][2]);
       g_debug ("adding vertex(%f,%f,%f)", v.x, v.y, v.z);
       memcpy(&obj->verts[i*8*3 + 8*p], &v, sizeof(v));
