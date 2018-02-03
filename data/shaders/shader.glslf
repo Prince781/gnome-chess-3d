@@ -6,11 +6,18 @@ in vec3 Normal;
 
 out vec4 outColor;
 
+uniform bool hasMaterial;
 uniform sampler2D material;
 
 uniform vec3 overrideColor;
 
+uniform vec3 lightDirection;
+uniform vec3 lightColor;
+
 void main() {
-	vec4 texColor = texture(material, Texcoord);
-	outColor = vec4(overrideColor, 1.0); /* * texColor; */
+  float amt = clamp(dot(Normal, lightDirection), 0, 1);
+  outColor = vec4(overrideColor * lightColor * (1 - amt), 1.0);
+
+  if (hasMaterial)
+    outColor *= texture(material, Texcoord);
 }
