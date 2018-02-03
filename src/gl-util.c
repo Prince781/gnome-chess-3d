@@ -216,7 +216,7 @@ load_OBJ(const char  *filename,
 {
   FILE *file = NULL;
   GArray *temp_verts = g_array_new (false, false, sizeof (vec3_t));
-  GArray *temp_uvs = g_array_new (false, false, sizeof (vec3_t));
+  GArray *temp_uvs = g_array_new (false, false, sizeof (GLfloat[2]));
   GArray *temp_normals = g_array_new (false, false, sizeof (vec3_t));
 
   GArray *tris = g_array_new (false, false, sizeof (int[3][3]));
@@ -243,14 +243,15 @@ load_OBJ(const char  *filename,
       sscanf(line, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
       g_array_append_val (temp_verts, vertex);
     } else if (strncmp(line, "vt", space - line) == 0) {
-      vec3_t texcoord;
+      GLfloat uv[2];
 
-      sscanf(line, "vt %f %f", &texcoord.x, &texcoord.y);
-      g_array_append_val (temp_uvs, texcoord);
+      sscanf(line, "vt %f %f", &uv[0], &uv[1]);
+      g_array_append_val (temp_uvs, uv);
     } else if (strncmp(line, "vn", space - line) == 0) {
       vec3_t normal;
 
       sscanf(line, "vn %f %f %f", &normal.x, &normal.y, &normal.z);
+      g_debug ("adding normal(%f,%f,%f)", normal.x, normal.y, normal.z);
       g_array_append_val (temp_normals, normal);
     } else if (strncmp(line, "f", space - line) == 0) {
       int face[3][3];
@@ -303,10 +304,24 @@ load_OBJ(const char  *filename,
     memcpy(triangle, ((int (*)[3][3])(tris->data))[i], sizeof triangle);
 
     for (int p=0; p<3; ++p) {
-      memcpy(&obj->verts[i*8*3 + 8*p], &temp_verts->data[triangle[p][0]], sizeof(vec3_t));
-      if (triangle[p][1] >= 0)
-        memcpy(&obj->verts[i*8*3 + 8*p + 3], &temp_uvs->data[triangle[p][1]], sizeof(GLfloat[2]));
-      memcpy(&obj->verts[i*8*3 + 8*p + 5], &temp_normals->data[triangle[p][2]], sizeof(vec3_t));
+      vec3_t v = ((vec3_t *) temp_verts->data)[triangle[p][0] - 1];
+      vec3_t n = ((vec3_t *) temp_normals->data)[triangle[p][2] - 1];
+
+      g_debug ("adding point %d//%d", triangle[p][0], triangle[p][2]);
+      g_debug ("adding vertex(%f,%f,%f)", v.x, v.y, v.z);
+      memcpy(&obj->verts[i*8*3 + 8*p], &v, sizeof(v));
+      if (triangle[p][1] >= 0) {
+        GLfloat uv[2];
+        GLfloat (*uvs)[2] = (void *) temp_uvs->data;
+
+        uv[0] = uvs[triangle[p][1] - 1][0];
+        uv[1] = uvs[triangle[p][1] - 1][1];
+
+        g_debug ("adding UV(%f,%f)", uv[0], uv[1]);
+        memcpy(&obj->verts[i*8*3 + 8*p + 3], &uv, sizeof(uv));
+      }
+      g_debug ("adding normal(%f,%f,%f)", n.x, n.y, n.z);
+      memcpy(&obj->verts[i*8*3 + 8*p + 5], &n, sizeof(n));
     }
   }
 
