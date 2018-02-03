@@ -77,6 +77,15 @@ chess_view3d_class_init (ChessView3dClass *klass)
 	object_class->set_property = chess_view3d_set_property;
 }
 
+static gboolean
+queue_render (GtkWidget     *self,
+              GdkFrameClock *frame_clock,
+              gpointer       user_data)
+{
+  gtk_gl_area_queue_render (GTK_GL_AREA (self));
+  return G_SOURCE_CONTINUE;
+}
+
 static void
 realize (GtkWidget *self)
 {
@@ -93,7 +102,7 @@ realize (GtkWidget *self)
   gtk_gl_area_set_has_depth_buffer (GTK_GL_AREA(self), TRUE);
   gtk_gl_area_set_has_stencil_buffer (GTK_GL_AREA(self), TRUE);
 
-  priv->model = m4_rotation(M_PI, vec3(0.0f,0.0f,1.0f));
+  priv->model = m4_rotation(M_PI, vec3(0.0f,1.0f,1.0f));
 
   /* view matrix:
    * arg1 = position of camera
@@ -101,7 +110,7 @@ realize (GtkWidget *self)
    * arg3 = direction up. Note that because UP is along the z-axis, this causes
    * (x,y)-plane to be perpendicular to "up"
    */
-  priv->view = m4_look_at(vec3(1.2f,1.2f,1.2f), vec3(0.0f,0.0f,0.0f), vec3(0.0f,0.0f,1.0f));
+  priv->view = m4_look_at(vec3(0.f,1.2f,0.f), vec3(0.0f,0.0f,0.0f), vec3(0.0f,0.0f,1.0f));
 
   /* projection matrix:
    * arg1 = field of view in degrees
@@ -195,6 +204,8 @@ realize (GtkWidget *self)
                          (void *)(5 * sizeof (GLfloat)) /* offset of the normal vector elements */);
 
   g_hash_table_insert (priv->models, pawn_obj->name, pawn_obj);
+
+  gtk_widget_add_tick_callback (self, queue_render, NULL, NULL);
 }
 
 static gboolean
@@ -224,9 +235,10 @@ render (GtkGLArea    *area,
   while (g_hash_table_iter_next (&iter, &key, &val)) {
     struct Obj3D *obj = val;
 
-    g_debug ("rendering %s", obj->name);
-
     glBindVertexArray(obj->vao);
+
+    // priv->model = m4_mul (priv->model, m4_rotation_y (0.001f));
+    priv->model = m4_mul (priv->model, m4_scaling (vec3 (0.993f, 0.993f, 0.993f)));
 
     shader_program_set_mat4 (priv->glsl_program, "model", priv->model);
     shader_program_set_vec3 (priv->glsl_program, "overrideColor", vec3 (1.f,1.f,1.f));
