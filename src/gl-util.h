@@ -76,6 +76,11 @@ struct Obj3D {
    * The VBO associated with the vertex data.
    */
   GLuint vbo;
+
+  /**
+   * The VAO associated with this object.
+   */
+  GLuint vao;
 };
 
 /**

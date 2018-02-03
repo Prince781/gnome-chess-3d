@@ -5,7 +5,6 @@
 
 typedef struct
 {
-  GLuint vao;
   GLuint glsl_program;
   GLuint vshader, fshader;
 
@@ -112,9 +111,6 @@ realize (GtkWidget *self)
    */
   priv->proj = m4_perspective(60.0f, (float)win_width / win_height, 1.0f, 10.0f);
 
-  glGenVertexArrays(1, &priv->vao);
-  glBindVertexArray(priv->vao);
-
   /* load shaders */
   priv->vshader = shader_new ("/org/gnome/chess/3d/shaders/shader.glslv",
                               GL_VERTEX_SHADER, &error);
@@ -166,10 +162,35 @@ realize (GtkWidget *self)
     return;
   }
 
+  /* create VAO */
+  glGenVertexArrays(1, &pawn_obj->vao);
+  glBindVertexArray(pawn_obj->vao);
+
   /* generate VBO */
   glGenBuffers(1, &pawn_obj->vbo);
   glBindBuffer(GL_ARRAY_BUFFER, pawn_obj->vbo);
   glBufferData(GL_ARRAY_BUFFER, pawn_obj->verts_size * 8, pawn_obj->verts, GL_STATIC_DRAW);
+
+  /* now we set up some inputs to the vertex shader */
+  GLint attribPtr;
+
+  attribPtr = glGetAttribLocation (priv->glsl_program, "position");
+  glEnableVertexAttribArray (attribPtr);
+  glVertexAttribPointer (attribPtr, 3 /* 3 floats = x,y,z */,
+                         GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat),
+                         0 /* offset of the vec3 */);
+
+  attribPtr = glGetAttribLocation (priv->glsl_program, "texcoord");
+  glEnableVertexAttribArray (attribPtr);
+  glVertexAttribPointer (attribPtr, 2 /* 2 floats = u,v */,
+                         GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat),
+                         (void *)(3 * sizeof (GLfloat)) /* offset of the UV elements */);
+
+  attribPtr = glGetAttribLocation (priv->glsl_program, "normal");
+  glEnableVertexAttribArray (attribPtr);
+  glVertexAttribPointer (attribPtr, 3 /* 3 floats = x,y,z */,
+                         GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat),
+                         (void *)(5 * sizeof (GLfloat)) /* offset of the normal vector elements */);
 
   g_hash_table_insert (priv->models, pawn_obj->name, pawn_obj);
 }
