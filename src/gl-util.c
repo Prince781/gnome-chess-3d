@@ -297,11 +297,9 @@ load_OBJ(const char  *filename,
    *  1b. push new vec[3 + 2 + 3] into array of vertices
    * 2. convert
    */
-  obj = calloc (1, sizeof(*obj));
-
+  obj = calloc (1, sizeof(*obj) + (tris->len * sizeof (obj->verts[0])));
   obj->name = name;
-  obj->verts_size = tris->len * 3;
-  obj->verts = calloc (obj->verts_size, sizeof (*obj->verts) * 8);
+  obj->num_tris = tris->len;
 
   for (int i=0; i<tris->len; ++i) {
     int triangle[3][3];
@@ -351,13 +349,13 @@ load_OBJ(const char  *filename,
       v[p] = v3_sub (v[p], center);
       g_debug ("tri[%d]: adding point %d//%d", i, triangle[p][0], triangle[p][2]);
       g_debug ("tri[%d]: vertex(%f,%f,%f)", i, v[p].x, v[p].y, v[p].z);
-      memcpy(&obj->verts[i*8*3 + 8*p], &v[p], sizeof(v[p]));
+      memcpy(&obj->verts[i][p][0], &v[p], sizeof(v[p]));
       if (triangle[p][1] >= 0) {
         g_debug ("tri[%d]: UV(%f,%f)", i, uv[p][0], uv[p][1]);
-        memcpy(&obj->verts[i*8*3 + 8*p + 3], &uv[p], sizeof(uv[p]));
+        memcpy(&obj->verts[i][p][3], &uv[p], sizeof(uv[p]));
       }
       g_debug ("tri[%d]: normal(%f,%f,%f)", i, n[p].x, n[p].y, n[p].z);
-      memcpy(&obj->verts[i*8*3 + 8*p + 5], &n[p], sizeof(n[p]));
+      memcpy(&obj->verts[i][p][5], &n[p], sizeof(n[p]));
     }
   }
 

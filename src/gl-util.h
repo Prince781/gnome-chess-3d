@@ -71,17 +71,7 @@ shader_program_set_mat4(GLuint      program,
 struct Obj3D {
   char *name;
 
-  /**
-   * [vec3 | uv | normal ] = [8]
-   */
-  GLfloat *verts;
-
-  /**
-   * verts_size * 8 = length of array
-   */
-  int verts_size;
-
-  /**
+ /**
    * The VBO associated with the vertex data.
    */
   GLuint vbo;
@@ -90,6 +80,16 @@ struct Obj3D {
    * The VAO associated with this object.
    */
   GLuint vao;
+
+  /**
+   *
+   */
+  int num_tris;
+
+  /**
+   * [vec3 | uv | normal ] = [8]
+   */
+  GLfloat verts[][3][8];
 };
 
 /**

@@ -180,7 +180,9 @@ realize (GtkWidget *self)
   /* generate VBO */
   glGenBuffers(1, &pawn_obj->vbo);
   glBindBuffer(GL_ARRAY_BUFFER, pawn_obj->vbo);
-  glBufferData(GL_ARRAY_BUFFER, pawn_obj->verts_size * 8, pawn_obj->verts, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER,
+               pawn_obj->num_tris * sizeof(pawn_obj->verts[0])/sizeof(pawn_obj->verts[0][0][0]),
+               pawn_obj->verts, GL_STATIC_DRAW);
 
   /* now we set up some inputs to the vertex shader */
   GLint attribPtr;
@@ -188,20 +190,20 @@ realize (GtkWidget *self)
   attribPtr = glGetAttribLocation (priv->glsl_program, "position");
   glEnableVertexAttribArray (attribPtr);
   glVertexAttribPointer (attribPtr, 3 /* 3 floats = x,y,z */,
-                         GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat),
+                         GL_FLOAT, GL_FALSE, sizeof (pawn_obj->verts[0][0]),
                          0 /* offset of the vec3 */);
 
   attribPtr = glGetAttribLocation (priv->glsl_program, "texcoord");
   glEnableVertexAttribArray (attribPtr);
   glVertexAttribPointer (attribPtr, 2 /* 2 floats = u,v */,
-                         GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat),
-                         (void *)(3 * sizeof (GLfloat)) /* offset of the UV elements */);
+                         GL_FLOAT, GL_FALSE, sizeof (pawn_obj->verts[0][0]),
+                         (void *)(3 * sizeof (pawn_obj->verts[0][0][0])) /* offset of the UV elements */);
 
   attribPtr = glGetAttribLocation (priv->glsl_program, "normal");
   glEnableVertexAttribArray (attribPtr);
   glVertexAttribPointer (attribPtr, 3 /* 3 floats = x,y,z */,
-                         GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat),
-                         (void *)(5 * sizeof (GLfloat)) /* offset of the normal vector elements */);
+                         GL_FLOAT, GL_FALSE, sizeof (pawn_obj->verts[0][0]),
+                         (void *)(5 * sizeof (pawn_obj->verts[0][0][0])) /* offset of the normal vector elements */);
 
   g_hash_table_insert (priv->models, pawn_obj->name, pawn_obj);
 
@@ -241,7 +243,7 @@ render (GtkGLArea    *area,
 
     shader_program_set_mat4 (priv->glsl_program, "model", priv->model);
     shader_program_set_vec3 (priv->glsl_program, "overrideColor", vec3 (1.f,1.f,1.f));
-    glDrawArrays (GL_TRIANGLES, 0, obj->verts_size);
+    glDrawArrays (GL_TRIANGLES, 0, (sizeof (obj->verts[0]) * obj->num_tris)  / sizeof (obj->verts[0][0]));
   }
 
   glDisable (GL_DEPTH_TEST);
