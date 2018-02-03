@@ -305,8 +305,8 @@ load_OBJ(const char  *filename,
     for (int p=0; p<3; ++p) {
       memcpy(&obj->verts[i*8*3 + 8*p], &temp_verts->data[triangle[p][0]], sizeof(vec3_t));
       if (triangle[p][1] >= 0)
-        memcpy(&obj->verts[i*8*3 + 8*p + 3], &temp_verts->data[triangle[p][1]], sizeof(GLfloat[2]));
-      memcpy(&obj->verts[i*8*3 + 8*p + 5], &temp_verts->data[triangle[p][2]], sizeof(vec3_t));
+        memcpy(&obj->verts[i*8*3 + 8*p + 3], &temp_uvs->data[triangle[p][1]], sizeof(GLfloat[2]));
+      memcpy(&obj->verts[i*8*3 + 8*p + 5], &temp_normals->data[triangle[p][2]], sizeof(vec3_t));
     }
   }
 
