@@ -110,7 +110,7 @@ realize (GtkWidget *self)
    * arg3 = direction up. Note that because UP is along the z-axis, this causes
    * (x,y)-plane to be perpendicular to "up"
    */
-  priv->view = m4_look_at(vec3(0.f,1.2f,0.f), vec3(0.0f,0.0f,0.0f), vec3(0.0f,0.0f,1.0f));
+  priv->view = m4_look_at(vec3(-4.f,1.2f,0.f), vec3(0.0f,0.0f,0.0f), vec3(0.0f,0.0f,1.0f));
 
   /* projection matrix:
    * arg1 = field of view in degrees
@@ -166,7 +166,7 @@ realize (GtkWidget *self)
   /* load pawn */
   struct Obj3D *pawn_obj;
 
-  pawn_obj = load_OBJ ("/org/gnome/chess/3d/pieces/pawn.obj", &error);
+  pawn_obj = load_OBJ ("/org/gnome/chess/3d/pieces/cube_test.obj", &error);
 
   if (error) {
     g_error ("failed to load pawn: %s", error->message);
@@ -237,8 +237,7 @@ render (GtkGLArea    *area,
 
     glBindVertexArray(obj->vao);
 
-    // priv->model = m4_mul (priv->model, m4_rotation_y (0.001f));
-    priv->model = m4_mul (priv->model, m4_scaling (vec3 (0.993f, 0.993f, 0.993f)));
+    priv->model = m4_mul (priv->model, m4_rotation_y (0.01f));
 
     shader_program_set_mat4 (priv->glsl_program, "model", priv->model);
     shader_program_set_vec3 (priv->glsl_program, "overrideColor", vec3 (1.f,1.f,1.f));

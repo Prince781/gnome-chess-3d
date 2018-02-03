@@ -9,6 +9,7 @@
     <file alias="pawn.obj">../data/pieces/3D/pawn.obj</file>
     <file alias="chess_board.obj">../data/pieces/3D/chess_board.obj</file>
     <file alias="chess_board_surround.obj">../data/pieces/3D/chess_board_surround.obj</file>
+    <file alias="cube_test.obj">../data/pieces/3D/cube_test.obj</file>
   </gresource>
   <gresource prefix="/org/gnome/chess/3d/shaders">
     <file alias="shader.glslv">../data/shaders/shader.glslv</file>

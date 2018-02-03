@@ -1,5 +1,6 @@
 # Blender v2.79 (sub 0) OBJ File: 'Chess Scene.blend'
 # www.blender.org
+mtllib pawn.mtl
 o White_Pawn.015_Cylinder.025
 v 15.445354 4.597585 20.655106
 v 15.672968 4.048077 20.655106
@@ -213,6 +214,7 @@ vn 0.2220 0.9750 0.0000
 vn -0.1570 0.9750 0.1570
 vn -0.2220 0.9750 0.0000
 vn -0.1570 0.9750 -0.1570
+usemtl Black_Pieces
 s 1
 f 1//1 6//2 2//3
 f 2//3 7//4 3//5

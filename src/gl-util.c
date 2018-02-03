@@ -218,7 +218,7 @@ load_OBJ(const char  *filename,
   GArray *temp_verts = g_array_new (false, false, sizeof (vec3_t));
   GArray *temp_uvs = g_array_new (false, false, sizeof (GLfloat[2]));
   GArray *temp_normals = g_array_new (false, false, sizeof (vec3_t));
-  vec3_t avg_vert = vec3(0,0,0);
+  vec3_t center = vec3(0,0,0);
 
   GArray *tris = g_array_new (false, false, sizeof (int[3][3]));
 
@@ -244,7 +244,7 @@ load_OBJ(const char  *filename,
       sscanf(line, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
       g_array_append_val (temp_verts, vertex);
 
-      avg_vert = v3_add (avg_vert, vertex);
+      center = v3_add (center, vertex);
     } else if (strncmp(line, "vt", space - line) == 0) {
       GLfloat uv[2];
 
@@ -289,7 +289,7 @@ load_OBJ(const char  *filename,
     goto end;
   }
 
-  avg_vert = v3_divs (avg_vert, temp_verts->len);
+  center = v3_divs (center, temp_verts->len);
 
   /* Create the object.
    * 1. for all faces f in F:
@@ -305,29 +305,59 @@ load_OBJ(const char  *filename,
 
   for (int i=0; i<tris->len; ++i) {
     int triangle[3][3];
+    vec3_t v[3];
+    GLfloat uv[3][2];
+    vec3_t n[3];
 
     memcpy(triangle, ((int (*)[3][3])(tris->data))[i], sizeof triangle);
 
     for (int p=0; p<3; ++p) {
-      vec3_t v = ((vec3_t *) temp_verts->data)[triangle[p][0] - 1];
-      vec3_t n = ((vec3_t *) temp_normals->data)[triangle[p][2] - 1];
+      v[p] = ((vec3_t *) temp_verts->data)[triangle[p][0] - 1];
+      n[p] = ((vec3_t *) temp_normals->data)[triangle[p][2] - 1];
 
-      v = v3_sub (v, avg_vert);
-      g_debug ("adding point %d//%d", triangle[p][0], triangle[p][2]);
-      g_debug ("adding vertex(%f,%f,%f)", v.x, v.y, v.z);
-      memcpy(&obj->verts[i*8*3 + 8*p], &v, sizeof(v));
       if (triangle[p][1] >= 0) {
-        GLfloat uv[2];
         GLfloat (*uvs)[2] = (void *) temp_uvs->data;
 
-        uv[0] = uvs[triangle[p][1] - 1][0];
-        uv[1] = uvs[triangle[p][1] - 1][1];
-
-        g_debug ("adding UV(%f,%f)", uv[0], uv[1]);
-        memcpy(&obj->verts[i*8*3 + 8*p + 3], &uv, sizeof(uv));
+        uv[p][0] = uvs[triangle[p][1] - 1][0];
+        uv[p][1] = uvs[triangle[p][1] - 1][1];
       }
-      g_debug ("adding normal(%f,%f,%f)", n.x, n.y, n.z);
-      memcpy(&obj->verts[i*8*3 + 8*p + 5], &n, sizeof(n));
+    }
+
+    vec3_t tri_center = v3_divs (v3_add (v3_add (v[0], v[1]), v[2]), 3);
+    vec3_t normal = v3_sub (center, tri_center);
+
+    /*
+     * normal * ((v1 - v0) x (v2 - v0))
+     */
+    if (v3_dot (normal, v3_cross (v3_sub (v[1], v[0]), v3_sub (v[2], v[0]))) > 0) {
+      const int p1 = 0;
+      const int p2 = 2;
+      vec3_t temp = v[p1];
+      v[p1] = v[p2];
+      v[p2] = temp;
+
+      temp = n[p1];
+      n[p1] = n[p2];
+      n[p2] = temp;
+
+      int temp2[3];
+      memcpy(&temp2, &triangle[p1], sizeof temp2);
+      memcpy(&triangle[p1], &triangle[p2], sizeof triangle[p1]);
+      memcpy(&triangle[p2], &temp2, sizeof triangle[p2]);
+      g_debug ("tri[%d]: swapping p%d and p%d", i, p1, p2);
+    }
+
+    for (int p=0; p<3; ++p) {
+      v[p] = v3_sub (v[p], center);
+      g_debug ("tri[%d]: adding point %d//%d", i, triangle[p][0], triangle[p][2]);
+      g_debug ("tri[%d]: vertex(%f,%f,%f)", i, v[p].x, v[p].y, v[p].z);
+      memcpy(&obj->verts[i*8*3 + 8*p], &v[p], sizeof(v[p]));
+      if (triangle[p][1] >= 0) {
+        g_debug ("tri[%d]: UV(%f,%f)", i, uv[p][0], uv[p][1]);
+        memcpy(&obj->verts[i*8*3 + 8*p + 3], &uv[p], sizeof(uv[p]));
+      }
+      g_debug ("tri[%d]: normal(%f,%f,%f)", i, n[p].x, n[p].y, n[p].z);
+      memcpy(&obj->verts[i*8*3 + 8*p + 5], &n[p], sizeof(n[p]));
     }
   }
 
