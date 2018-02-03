@@ -163,7 +163,7 @@ realize (GtkWidget *self)
 
   shader_program_set_mat4 (priv->glsl_program, "view", priv->view);
   shader_program_set_vec3 (priv->glsl_program, "lightColor", vec3 (1.f, 1.f, 1.f));
-  shader_program_set_vec3 (priv->glsl_program, "lightDirection", vec3 (-1.f, -1.f, -1.f));
+  shader_program_set_vec3 (priv->glsl_program, "lightDirection", vec3 (0.f, 0.f, -1.f));
 
   /* load pawn */
   struct Obj3D *pawn_obj;
