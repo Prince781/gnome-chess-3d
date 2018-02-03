@@ -152,6 +152,8 @@ realize (GtkWidget *self)
 
   glUseProgram(priv->glsl_program);
 
+  shader_program_set_mat4 (priv->glsl_program, "view", priv->view);
+
   /* load pawn */
   struct Obj3D *pawn_obj;
 
@@ -199,7 +201,40 @@ static gboolean
 render (GtkGLArea    *area,
         GdkGLContext *context)
 {
-	/* TODO: render things */
+  ChessView3dPrivate *priv;
+  GHashTableIter iter;
+  gpointer key;
+  gpointer val;
+  int win_width, win_height;
+
+  priv = chess_view3d_get_instance_private (CHESS_VIEW3D (area));
+
+  win_width = gtk_widget_get_allocated_width (GTK_WIDGET (area));
+  win_height = gtk_widget_get_allocated_height (GTK_WIDGET (area));
+
+  priv->proj = m4_perspective(60.0f, (float)win_width / win_height, 1.0f, 10.0f);
+  shader_program_set_mat4 (priv->glsl_program, "proj", priv->proj);
+
+  glEnable (GL_DEPTH_TEST);
+
+  glClearColor (0.2f, 0.2f, 0.2f, 1.f);
+  glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  g_hash_table_iter_init (&iter, priv->models);
+  while (g_hash_table_iter_next (&iter, &key, &val)) {
+    struct Obj3D *obj = val;
+
+    g_debug ("rendering %s", obj->name);
+
+    /* TODO: translate */
+    shader_program_set_mat4 (priv->glsl_program, "model", priv->model);
+
+    glBindVertexArray(obj->vao);
+    glDrawArrays (GL_TRIANGLES, 0, obj->verts_size);
+  }
+
+  glDisable (GL_DEPTH_TEST);
+  glFlush ();
 	return TRUE;
 }
 
