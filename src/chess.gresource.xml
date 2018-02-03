@@ -5,6 +5,13 @@
     <file preprocess="xml-stripblanks" alias="preferences.ui">../data/preferences.ui</file>
     <file preprocess="xml-stripblanks" alias="promotion-type-selector.ui">../data/promotion-type-selector.ui</file>
   </gresource>
+  <gresource prefix="/org/gnome/chess/3d/pieces">
+    <file alias="pawn.obj">../data/pieces/3D/pawn.obj</file>
+  </gresource>
+  <gresource prefix="/org/gnome/chess/3d/shaders">
+    <file alias="shader.glslv">../data/shaders/shader.glslv</file>
+    <file alias="shader.glslf">../data/shaders/shader.glslf</file>
+  </gresource>
   <gresource prefix="/org/gnome/chess/gtk">
     <file preprocess="xml-stripblanks" alias="menus.ui">../data/menu.ui</file>
   </gresource>

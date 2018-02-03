@@ -1,9 +1,17 @@
 #include "chess-view-3d.h"
 #include <epoxy/gl.h>
 #include "math_3d.h"
+#include "gl-util.h"
 
 typedef struct
 {
+  GLuint vao;
+  GLuint glsl_program;
+  GLuint vshader, fshader;
+
+  mat4_t model, view, proj;
+
+  GHashTable *models;
 } ChessView3dPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (ChessView3d, chess_view3d, GTK_TYPE_GL_AREA)
@@ -70,6 +78,102 @@ chess_view3d_class_init (ChessView3dClass *klass)
 	object_class->set_property = chess_view3d_set_property;
 }
 
+static void
+realize (GtkWidget *self)
+{
+  ChessView3dPrivate *priv;
+  int win_width = gtk_widget_get_allocated_width (self);
+  int win_height = gtk_widget_get_allocated_height (self);
+  GError *error = NULL;
+
+  priv = chess_view3d_get_instance_private (CHESS_VIEW3D(self));
+  g_assert (priv != NULL);
+
+  gtk_gl_area_make_current (GTK_GL_AREA (self));
+
+  gtk_gl_area_set_has_depth_buffer (GTK_GL_AREA(self), TRUE);
+  gtk_gl_area_set_has_stencil_buffer (GTK_GL_AREA(self), TRUE);
+
+  priv->model = m4_rotation(M_PI, vec3(0.0f,0.0f,1.0f));
+
+  /* view matrix:
+   * arg1 = position of camera
+   * arg2 = center of view
+   * arg3 = direction up. Note that because UP is along the z-axis, this causes
+   * (x,y)-plane to be perpendicular to "up"
+   */
+  priv->view = m4_look_at(vec3(1.2f,1.2f,1.2f), vec3(0.0f,0.0f,0.0f), vec3(0.0f,0.0f,1.0f));
+
+  /* projection matrix:
+   * arg1 = field of view in degrees
+   * arg2 = aspect ratio
+   * arg3 = near distance
+   * arg4 = far distance
+   */
+  priv->proj = m4_perspective(60.0f, (float)win_width / win_height, 1.0f, 10.0f);
+
+  glGenVertexArrays(1, &priv->vao);
+  glBindVertexArray(priv->vao);
+
+  /* load shaders */
+  priv->vshader = shader_new ("/org/gnome/chess/3d/shaders/shader.glslv",
+                              GL_VERTEX_SHADER, &error);
+  if (error) {
+    g_error ("failed to load shader: %s", error->message);
+    return;
+  }
+  shader_compile (priv->vshader, &error);
+  if (error) {
+    g_error ("failed to compile shader: %s", error->message);
+    return;
+  }
+
+  priv->fshader = shader_new ("/org/gnome/chess/3d/shaders/shader.glslf",
+                              GL_FRAGMENT_SHADER, &error);
+  if (error) {
+    g_error ("failed to load shader: %s", error->message);
+    return;
+  }
+  shader_compile (priv->fshader, &error);
+  if (error) {
+    g_error ("failed to compile shader: %s", error->message);
+    return;
+  }
+
+  /* create program, attach shaders, and link */
+  priv->glsl_program = glCreateProgram();
+
+  glAttachShader (priv->glsl_program, priv->vshader);
+  glAttachShader (priv->glsl_program, priv->fshader);
+
+  glBindFragDataLocation (priv->glsl_program, 0, "outColor");
+
+  shader_program_link (priv->glsl_program, &error);
+  if (error) {
+    g_error ("failed to link program: %s", error->message);
+    return;
+  }
+
+  glUseProgram(priv->glsl_program);
+
+  /* load pawn */
+  struct Obj3D *pawn_obj;
+
+  pawn_obj = load_OBJ ("/org/gnome/chess/3d/pieces/pawn.obj", &error);
+
+  if (error) {
+    g_error ("failed to load pawn: %s", error->message);
+    return;
+  }
+
+  /* generate VBO */
+  glGenBuffers(1, &pawn_obj->vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, pawn_obj->vbo);
+  glBufferData(GL_ARRAY_BUFFER, pawn_obj->verts_size * 8, pawn_obj->verts, GL_STATIC_DRAW);
+
+  g_hash_table_insert (priv->models, pawn_obj->name, pawn_obj);
+}
+
 static gboolean
 render (GtkGLArea    *area,
         GdkGLContext *context)
@@ -79,7 +183,21 @@ render (GtkGLArea    *area,
 }
 
 static void
+unrealize (GtkWidget *self)
+{
+  /* TODO: uninitialize */
+}
+
+static void
 chess_view3d_init (ChessView3d *self)
 {
+  ChessView3dPrivate *priv;
+
+  priv = chess_view3d_get_instance_private (self);
+
+  priv->models = g_hash_table_new (g_str_hash, g_str_equal);
+
+  g_signal_connect (self, "realize", G_CALLBACK (realize), NULL);
 	g_signal_connect (self, "render", G_CALLBACK (render), NULL);
+  g_signal_connect (self, "unrealize", G_CALLBACK (unrealize), NULL);
 }

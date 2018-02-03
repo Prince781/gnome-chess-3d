@@ -13,6 +13,7 @@ chess_sources = [
 
   'chess-view-3d.c',
   'gl-util.c',
+  'math_3d.c',
 
   'ai-profile.vala',
   'chess-engine-cecp.vala',
