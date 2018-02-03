@@ -18,7 +18,7 @@ uniform mat4 proj;
 void main() {
 	gl_Position = proj * view * model * vec4(position, 1.0);
 
-	Position = (model * vec4(position, 1.0)).xyz;
+	Position = vec3(model * vec4(position, 1.0));
 	Texcoord = texcoord;
-	Normal = (model * vec4(normal, 1.0)).xyz;
+	Normal = vec3(model * vec4(normal, 0.0));
 }
