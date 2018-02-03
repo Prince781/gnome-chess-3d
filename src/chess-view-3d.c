@@ -226,10 +226,10 @@ render (GtkGLArea    *area,
 
     g_debug ("rendering %s", obj->name);
 
-    /* TODO: translate */
-    shader_program_set_mat4 (priv->glsl_program, "model", priv->model);
-
     glBindVertexArray(obj->vao);
+
+    shader_program_set_mat4 (priv->glsl_program, "model", priv->model);
+    shader_program_set_vec3 (priv->glsl_program, "overrideColor", vec3 (1.f,1.f,1.f));
     glDrawArrays (GL_TRIANGLES, 0, obj->verts_size);
   }
 

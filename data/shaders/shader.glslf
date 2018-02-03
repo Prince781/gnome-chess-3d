@@ -12,5 +12,5 @@ uniform vec3 overrideColor;
 
 void main() {
 	vec4 texColor = texture(material, Texcoord);
-	outColor = vec4(overrideColor, 1.0) * texColor;
+	outColor = vec4(overrideColor, 1.0); /* * texColor; */
 }

@@ -51,6 +51,15 @@ shader_program_link (GLuint   program,
                      GError **error);
 
 static inline void
+shader_program_set_vec3(GLuint      program,
+                        const char *name,
+                        vec3_t      vec)
+{
+  glUniform3f (glGetUniformLocation (program, name),
+               vec.x, vec.y, vec.z);
+}
+
+static inline void
 shader_program_set_mat4(GLuint      program,
                         const char *name,
                         mat4_t      mat)
