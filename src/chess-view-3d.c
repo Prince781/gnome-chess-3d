@@ -180,9 +180,8 @@ realize (GtkWidget *self)
   /* generate VBO */
   glGenBuffers(1, &pawn_obj->vbo);
   glBindBuffer(GL_ARRAY_BUFFER, pawn_obj->vbo);
-  glBufferData(GL_ARRAY_BUFFER,
-               pawn_obj->num_tris * sizeof(pawn_obj->verts[0])/sizeof(pawn_obj->verts[0][0][0]),
-               pawn_obj->verts, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(pawn_obj->verts[0]) * pawn_obj->num_tris,
+               &pawn_obj->verts[0], GL_STATIC_DRAW);
 
   /* now we set up some inputs to the vertex shader */
   GLint attribPtr;
