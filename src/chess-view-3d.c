@@ -244,6 +244,51 @@ unrealize (GtkWidget *self)
   /* TODO: uninitialize */
 }
 
+static gboolean
+mousedown_cb (GtkWidget *self,
+              GdkEvent  *event)
+{
+  GdkEventButton *evb;
+  GdkEventMotion *evm;
+
+  evb = &event->button;
+  evm = &event->motion;
+
+  g_debug ("mousedown event (%lf, %lf)!", evm->x, evm->y);
+
+  return TRUE;
+}
+
+static gboolean
+mousemove_cb (GtkWidget *self,
+              GdkEvent  *event)
+{
+  GdkEventButton *evb;
+  GdkEventMotion *evm;
+
+  evb = &event->button;
+  evm = &event->motion;
+
+  g_debug ("mousemove event (%lf, %lf)!", evm->x, evm->y);
+
+  return TRUE;
+}
+
+static gboolean
+mouseup_cb (GtkWidget *self,
+            GdkEvent  *event)
+{
+  GdkEventButton *evb;
+  GdkEventMotion *evm;
+
+  evb = &event->button;
+  evm = &event->motion;
+
+  g_debug ("mouseup event (%lf, %lf)!", evm->x, evm->y);
+
+  return TRUE;
+}
+
 static void
 chess_view3d_init (ChessView3d *self)
 {
@@ -253,7 +298,15 @@ chess_view3d_init (ChessView3d *self)
 
   priv->models = g_hash_table_new (g_str_hash, g_str_equal);
 
+  gtk_widget_set_events (GTK_WIDGET (self),
+                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_MOTION_MASK
+                         | GDK_BUTTON_RELEASE_MASK);
+
   g_signal_connect (self, "realize", G_CALLBACK (realize), NULL);
 	g_signal_connect (self, "render", G_CALLBACK (render), NULL);
   g_signal_connect (self, "unrealize", G_CALLBACK (unrealize), NULL);
+
+  g_signal_connect (self, "button-press-event", G_CALLBACK (mousedown_cb), NULL);
+  g_signal_connect (self, "motion-notify-event", G_CALLBACK (mousemove_cb), NULL);
+  g_signal_connect (self, "button-release-event", G_CALLBACK (mouseup_cb), NULL);
 }
