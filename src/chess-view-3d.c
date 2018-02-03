@@ -166,7 +166,7 @@ realize (GtkWidget *self)
   /* load pawn */
   struct Obj3D *pawn_obj;
 
-  pawn_obj = load_OBJ ("/org/gnome/chess/3d/pieces/cube_test.obj", &error);
+  pawn_obj = load_OBJ ("/org/gnome/chess/3d/pieces/pawn.obj", &error);
 
   if (error) {
     g_error ("failed to load pawn: %s", error->message);
