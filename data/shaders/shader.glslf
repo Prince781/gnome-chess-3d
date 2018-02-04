@@ -15,7 +15,7 @@ uniform vec3 lightDirection;
 uniform vec3 lightColor;
 
 void main() {
-  float amt = clamp(-dot(Normal, lightDirection), 0, 1);
+  float amt = clamp(dot(Normal, lightDirection), 0, 1);
   outColor = vec4(overrideColor * lightColor * amt, 1.0);
 
   if (hasMaterial)
