@@ -102,23 +102,7 @@ realize (GtkWidget *self)
   gtk_gl_area_set_has_depth_buffer (GTK_GL_AREA(self), TRUE);
   gtk_gl_area_set_has_stencil_buffer (GTK_GL_AREA(self), TRUE);
 
-  priv->model = m4_rotation(M_PI, vec3(0.0f,1.0f,1.0f));
-
-  /* view matrix:
-   * arg1 = position of camera
-   * arg2 = center of view
-   * arg3 = direction up. Note that because UP is along the z-axis, this causes
-   * (x,y)-plane to be perpendicular to "up"
-   */
-  priv->view = m4_look_at(vec3(-4.f,1.2f,0.f), vec3(0.0f,0.0f,0.0f), vec3(0.0f,0.0f,1.0f));
-
-  /* projection matrix:
-   * arg1 = field of view in degrees
-   * arg2 = aspect ratio
-   * arg3 = near distance
-   * arg4 = far distance
-   */
-  priv->proj = m4_perspective(60.0f, (float)win_width / win_height, 1.0f, 10.0f);
+  priv->model = m4_rotation(0, vec3(0.0f,1.0f,0.0f));
 
   /* load shaders */
   priv->vshader = shader_new ("/org/gnome/chess/3d/shaders/shader.glslv",
@@ -161,9 +145,8 @@ realize (GtkWidget *self)
 
   glUseProgram(priv->glsl_program);
 
-  shader_program_set_mat4 (priv->glsl_program, "view", priv->view);
   shader_program_set_vec3 (priv->glsl_program, "lightColor", vec3 (1.f, 1.f, 1.f));
-  shader_program_set_vec3 (priv->glsl_program, "lightDirection", vec3 (0.f, 0.f, -1.f));
+  shader_program_set_vec3 (priv->glsl_program, "lightDirection", vec3 (0.f, 1.f, 0.f));
 
   /* load pawn */
   struct Obj3D *pawn_obj;
@@ -226,7 +209,22 @@ render (GtkGLArea    *area,
   win_width = gtk_widget_get_allocated_width (GTK_WIDGET (area));
   win_height = gtk_widget_get_allocated_height (GTK_WIDGET (area));
 
-  priv->proj = m4_perspective(60.0f, (float)win_width / win_height, 1.0f, 10.0f);
+  /* view matrix:
+   * arg1 = position of camera
+   * arg2 = center of view
+   * arg3 = direction up. Note that because UP is along the y-axis, this causes
+   * (x,z)-plane to be perpendicular to "up"
+   */
+  priv->view = m4_look_at(vec3(0.f,0.f,4.f), vec3(0.0f,0.0f,0.0f), vec3(0.0f,1.0f,0.0f));
+  shader_program_set_mat4 (priv->glsl_program, "view", priv->view);
+
+  /* projection matrix:
+   * arg1 = field of view in degrees
+   * arg2 = aspect ratio
+   * arg3 = near distance
+   * arg4 = far distance
+   */
+  priv->proj = m4_perspective (60.0f, (float)win_width / win_height, 1.0f, 1000.0f);
   shader_program_set_mat4 (priv->glsl_program, "proj", priv->proj);
 
   glEnable (GL_DEPTH_TEST);
@@ -240,7 +238,7 @@ render (GtkGLArea    *area,
 
     glBindVertexArray(obj->vao);
 
-    priv->model = m4_mul (priv->model, m4_rotation_y (0.01f));
+    priv->model = m4_mul (priv->model, m4_translation (vec3 (0.0f, 0.0f, -0.01f)));
 
     shader_program_set_mat4 (priv->glsl_program, "model", priv->model);
     shader_program_set_vec3 (priv->glsl_program, "overrideColor", vec3 (1.f,1.f,1.f));
