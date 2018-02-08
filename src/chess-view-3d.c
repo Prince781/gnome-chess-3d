@@ -90,8 +90,6 @@ static void
 realize (GtkWidget *self)
 {
   ChessView3dPrivate *priv;
-  int win_width = gtk_widget_get_allocated_width (self);
-  int win_height = gtk_widget_get_allocated_height (self);
   GError *error = NULL;
 
   priv = chess_view3d_get_instance_private (CHESS_VIEW3D(self));
