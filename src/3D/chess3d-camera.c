@@ -23,10 +23,10 @@ Chess3dCamera *
 chess3d_camera_new (float fov, float near, float far)
 {
   return g_object_new (CHESS3D_TYPE_CAMERA,
-                       "name", "Camera",
                        "fov", fov,
                        "near", near,
                        "far", far,
+                       "name", "Camera",
                        NULL);
 }
 

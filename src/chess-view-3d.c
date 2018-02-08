@@ -228,7 +228,7 @@ render (GtkGLArea    *area,
 
     glBindVertexArray(obj->vao);
 
-    priv->model = m4_mul (priv->model, m4_translation (vec3 (0.0f, 0.0f, -0.01f)));
+    priv->model = m4_mul (priv->model, m4_rotation_y (M_PI / 180));
 
     shader_program_set_mat4 (priv->glsl_program, "model", priv->model);
     shader_program_set_vec3 (priv->glsl_program, "overrideColor", vec3 (1.f,1.f,1.f));
@@ -300,6 +300,7 @@ chess_view3d_init (ChessView3d *self)
 
   priv->models = g_hash_table_new (g_str_hash, g_str_equal);
   priv->camera = chess3d_camera_new (60.f, 1.f, 100.f);
+  chess3d_game_object_set_position ((Chess3dGameObject *) priv->camera, vec3 (0, 0, -4));
 
   gtk_widget_set_events (GTK_WIDGET (self),
                          GDK_BUTTON_PRESS_MASK | GDK_BUTTON_MOTION_MASK
