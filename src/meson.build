@@ -15,6 +15,12 @@ chess_sources = [
   'gl-util.c',
   'math_3d.c',
 
+  '3D/vec3.c',
+  '3D/mat4.c',
+  '3D/chess3d-game-object.c',
+  '3D/chess3d-camera.c',
+  '3D/chess3d-model.c',
+
   'ai-profile.vala',
   'chess-engine-cecp.vala',
   'chess-engine-uci.vala',
