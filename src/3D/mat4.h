@@ -6,6 +6,8 @@
 
 G_BEGIN_DECLS
 
+GType mat4_get_type (void);
+
 #define MAT4_TYPE (mat4_get_type())
 
 typedef struct _Mat4 Mat4;

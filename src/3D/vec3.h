@@ -6,6 +6,8 @@
 
 G_BEGIN_DECLS
 
+GType vec3_get_type (void);
+
 #define VEC3_TYPE (vec3_get_type())
 
 typedef struct _Vec3 Vec3;

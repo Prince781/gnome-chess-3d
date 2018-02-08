@@ -2,15 +2,18 @@
 #include <epoxy/gl.h>
 #include "math_3d.h"
 #include "gl-util.h"
+#include "3D/chess3d-camera.h"
 
 typedef struct
 {
   GLuint glsl_program;
   GLuint vshader, fshader;
 
-  mat4_t model, view, proj;
+  mat4_t model;
 
   GHashTable *models;
+
+  Chess3dCamera *camera;
 } ChessView3dPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (ChessView3d, chess_view3d, GTK_TYPE_GL_AREA)
@@ -201,29 +204,18 @@ render (GtkGLArea    *area,
   gpointer key;
   gpointer val;
   int win_width, win_height;
+  mat4_t view, proj;
 
   priv = chess_view3d_get_instance_private (CHESS_VIEW3D (area));
 
   win_width = gtk_widget_get_allocated_width (GTK_WIDGET (area));
   win_height = gtk_widget_get_allocated_height (GTK_WIDGET (area));
 
-  /* view matrix:
-   * arg1 = position of camera
-   * arg2 = center of view
-   * arg3 = direction up. Note that because UP is along the y-axis, this causes
-   * (x,z)-plane to be perpendicular to "up"
-   */
-  priv->view = m4_look_at(vec3(0.f,0.f,4.f), vec3(0.0f,0.0f,0.0f), vec3(0.0f,1.0f,0.0f));
-  shader_program_set_mat4 (priv->glsl_program, "view", priv->view);
+  view = chess3d_camera_get_view (priv->camera);
+  proj = chesss3d_camera_get_projection (priv->camera, (float) win_width / win_height);
 
-  /* projection matrix:
-   * arg1 = field of view in degrees
-   * arg2 = aspect ratio
-   * arg3 = near distance
-   * arg4 = far distance
-   */
-  priv->proj = m4_perspective (60.0f, (float)win_width / win_height, 1.0f, 1000.0f);
-  shader_program_set_mat4 (priv->glsl_program, "proj", priv->proj);
+  shader_program_set_mat4 (priv->glsl_program, "view", view);
+  shader_program_set_mat4 (priv->glsl_program, "proj", proj);
 
   glEnable (GL_DEPTH_TEST);
 
@@ -307,6 +299,7 @@ chess_view3d_init (ChessView3d *self)
   priv = chess_view3d_get_instance_private (self);
 
   priv->models = g_hash_table_new (g_str_hash, g_str_equal);
+  priv->camera = chess3d_camera_new (60.f, 1.f, 100.f);
 
   gtk_widget_set_events (GTK_WIDGET (self),
                          GDK_BUTTON_PRESS_MASK | GDK_BUTTON_MOTION_MASK
