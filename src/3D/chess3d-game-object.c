@@ -117,9 +117,13 @@ chess3d_game_object_set_property (GObject      *object,
                                   GParamSpec   *pspec)
 {
   Chess3dGameObject *self = CHESS3D_GAME_OBJECT (object);
+  Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
 
   switch (prop_id)
     {
+    case PROP_NAME:
+      g_string_assign (priv->name, g_value_get_string (value));
+      break;
     case PROP_POSITION:
       chess3d_game_object_set_position (self, *(vec3_t *)g_value_get_boxed (value));
       break;
@@ -145,7 +149,7 @@ chess3d_game_object_class_init (Chess3dGameObjectClass *klass)
                          "Name",
                          "The name of the game object.",
                          "Untitled",
-                         G_PARAM_CONSTRUCT_ONLY);
+                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
 
   properties[PROP_POSITION] =
     g_param_spec_boxed ("position",
