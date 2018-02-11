@@ -1,7 +1,8 @@
 #include "chess3d-model.h"
 #include "wavefront-object.h"
-#include <epoxy/gl.h>
 #include "vec3.h"
+#include "../gl-util.h"
+#include <epoxy/gl.h>
 
 typedef struct
 {
@@ -144,4 +145,14 @@ vec3_t chess3d_model_get_color (Chess3dModel *self)
   Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
 
   return priv->color;
+}
+
+void chess3d_model_render (Chess3dModel *self,
+                           GLuint        program)
+{
+  g_return_if_fail (self);
+  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
+
+  shader_program_set_vec3 (program, "overrideColor", priv->color);
+  wavefront_object_render (priv->object);
 }

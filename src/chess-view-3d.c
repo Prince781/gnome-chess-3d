@@ -269,9 +269,8 @@ render (GtkGLArea    *area,
       priv->model = m4_mul (priv->model, m4_rotation_y (M_PI / 180));
 
       shader_program_set_mat4 (priv->glsl_program, "model", priv->model);
-      shader_program_set_vec3 (priv->glsl_program, "overrideColor", vec3 (1.f,1.f,1.f));
 
-      wavefront_object_render (chess3d_model_get_object (model));
+      chess3d_model_render (model, priv->glsl_program);
     }
   }
 

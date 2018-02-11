@@ -25,4 +25,14 @@ void chess3d_model_set_color (Chess3dModel *self,
 
 vec3_t chess3d_model_get_color (Chess3dModel *self);
 
+/**
+ * chess3d_model_render:
+ *
+ * Given the shader program @program, renders the object.
+ *
+ * Returns:
+ */
+void chess3d_model_render (Chess3dModel *self,
+                           GLuint        program);
+
 G_END_DECLS
