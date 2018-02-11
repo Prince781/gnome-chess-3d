@@ -44,8 +44,8 @@ float chess3d_camera_get_far (Chess3dCamera *self);
 
 mat4_t chess3d_camera_get_view (Chess3dCamera *self);
 
-mat4_t chesss3d_camera_get_projection (Chess3dCamera *self,
-                                       float          aspect_ratio);
+mat4_t chess3d_camera_get_projection (Chess3dCamera *self,
+                                      float          aspect_ratio);
 
 G_END_DECLS
 

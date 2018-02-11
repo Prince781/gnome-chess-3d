@@ -230,7 +230,7 @@ render (GtkGLArea    *area,
   win_height = gtk_widget_get_allocated_height (GTK_WIDGET (area));
 
   view = chess3d_camera_get_view (priv->camera);
-  proj = chesss3d_camera_get_projection (priv->camera, (float) win_width / win_height);
+  proj = chess3d_camera_get_projection (priv->camera, (float) win_width / win_height);
 
   shader_program_set_mat4 (priv->glsl_program, "view", view);
   shader_program_set_mat4 (priv->glsl_program, "proj", proj);

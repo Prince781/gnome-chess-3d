@@ -197,7 +197,7 @@ mat4_t chess3d_camera_get_view (Chess3dCamera *self)
   return m4_look_at (position, dir, up);
 }
 
-mat4_t chesss3d_camera_get_projection (Chess3dCamera *self,
+mat4_t chess3d_camera_get_projection (Chess3dCamera *self,
                                        float          aspect_ratio)
 {
   g_return_val_if_fail (self, (mat4_t) {});
