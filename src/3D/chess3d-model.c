@@ -47,16 +47,16 @@ chess3d_model_get_property (GObject    *object,
                             GParamSpec *pspec)
 {
   Chess3dModel *self = CHESS3D_MODEL (object);
+  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
 
   switch (prop_id)
     {
     case PROP_OBJECT:
       g_value_set_object (value, chess3d_model_get_object (self));
       break;
-    case PROP_COLOR: {
-      vec3_t color = chess3d_model_get_color (self);
-      g_value_set_boxed (value, &color);
-    } break;
+    case PROP_COLOR:
+      g_value_set_boxed (value, &priv->color);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -76,9 +76,9 @@ chess3d_model_set_property (GObject      *object,
     case PROP_OBJECT:
       priv->object = g_value_get_object (value);
       break;
-    case PROP_COLOR: {
+    case PROP_COLOR:
       chess3d_model_set_color (self, *(vec3_t *) g_value_get_boxed (value));
-    } break;
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }

@@ -51,24 +51,22 @@ chess3d_game_object_get_property (GObject    *object,
                                   GParamSpec *pspec)
 {
   Chess3dGameObject *self = CHESS3D_GAME_OBJECT (object);
+  Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
 
   switch (prop_id)
     {
     case PROP_NAME:
       g_value_set_string (value, chess3d_game_object_get_name (self));
       break;
-    case PROP_POSITION: {
-      vec3_t pos = chess3d_game_object_get_position (self);
-      g_value_set_boxed (value, &pos);
-    } break;
-    case PROP_ROTATION: {
-      vec3_t rot = chess3d_game_object_get_rotation (self);
-      g_value_set_boxed (value, &rot);
-    } break;
-    case PROP_MODEL_MATRIX: {
-      mat4_t mm = chess3d_game_object_get_model_matrix (self);
-      g_value_set_boxed (value, &mm);
-    } break;
+    case PROP_POSITION:
+      g_value_set_boxed (value, &priv->position);
+      break;
+    case PROP_ROTATION:
+      g_value_set_boxed (value, &priv->rotation);
+      break;
+    case PROP_MODEL_MATRIX:
+      g_value_set_boxed (value, &priv->model_matrix);
+      break;
     case PROP_MODEL:
       g_value_set_object (value, chess3d_game_object_get_model (self));
       break;
