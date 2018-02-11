@@ -212,7 +212,10 @@ Copyright © 2015–2016 Sahil Sareen""";
         view_container.add_named (view3d, "3d-view");
         view3d.show ();
 
-        view_container.visible_child_name = "2d-view";
+        if ((bool) settings.get_value ("show-3d")) {
+            view_container.visible_child_name = "3d-view";
+        } else
+            view_container.visible_child_name = "2d-view";
 
         var system_engine_cfg = Path.build_filename (SYSCONFDIR, "gnome-chess", "engines.conf", null);
         var user_engine_cfg = Path.build_filename (Environment.get_user_config_dir (), "gnome-chess", "engines.conf", null);
