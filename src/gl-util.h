@@ -5,6 +5,10 @@
 #include "math_3d.h"
 #include <glib.h>
 
+FILE *
+fopen_gresource(const char  *filename,
+                GError     **error);
+
 /* Loads data from a file. (*count) is the number of
  * lines read.
  * Returns an array of lines
@@ -67,37 +71,5 @@ shader_program_set_mat4(GLuint      program,
     glUniformMatrix4fv(glGetUniformLocation(program, name),
             1, GL_FALSE, &mat.m[0][0]);
 }
-
-struct Obj3D {
-  char *name;
-
- /**
-   * The VBO associated with the vertex data.
-   */
-  GLuint vbo;
-
-  /**
-   * The VAO associated with this object.
-   */
-  GLuint vao;
-
-  /**
-   *
-   */
-  int num_tris;
-
-  /**
-   * [vec3 | uv | normal ] = [8]
-   */
-  GLfloat verts[][3][8];
-};
-
-/**
- * loads a new wavefront .obj file.
- * Returns NULL on error.
- */
-struct Obj3D *
-load_OBJ(const char  *filename,
-         GError     **error);
 
 #endif

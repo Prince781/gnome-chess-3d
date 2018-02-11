@@ -20,6 +20,7 @@ chess_sources = [
   '3D/chess3d-game-object.c',
   '3D/chess3d-camera.c',
   '3D/chess3d-model.c',
+  '3D/wavefront-object.c',
 
   'ai-profile.vala',
   'chess-engine-cecp.vala',

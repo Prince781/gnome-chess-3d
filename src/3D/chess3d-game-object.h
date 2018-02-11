@@ -3,12 +3,13 @@
 
 #include <glib-object.h>
 #include "vec3.h"
+#include "chess3d-model.h"
 
 G_BEGIN_DECLS
 
 #define CHESS3D_TYPE_GAME_OBJECT (chess3d_game_object_get_type())
 
-G_DECLARE_DERIVABLE_TYPE (Chess3dGameObject, chess3d_game_object, CHESS3D, GAME_OBJECT, GObject)
+G_DECLARE_DERIVABLE_TYPE (Chess3dGameObject, chess3d_game_object, CHESS3D, GAME_OBJECT, GInitiallyUnowned)
 
 struct _Chess3dGameObjectClass
 {
@@ -28,6 +29,11 @@ vec3_t chess3d_game_object_get_rotation (Chess3dGameObject *self);
 
 void chess3d_game_object_set_rotation (Chess3dGameObject *self,
                                        vec3_t             rotation);
+
+Chess3dModel *chess3d_game_object_get_model (Chess3dGameObject *self);
+
+void chess3d_game_object_set_model (Chess3dGameObject *self,
+                                    Chess3dModel      *model);
 
 G_END_DECLS
 

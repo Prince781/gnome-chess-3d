@@ -3,6 +3,7 @@
 #include "math_3d.h"
 #include "gl-util.h"
 #include "3D/chess3d-camera.h"
+#include "3D/wavefront-object.h"
 
 typedef struct
 {
@@ -11,7 +12,11 @@ typedef struct
 
   mat4_t model;
 
+  /* HashTable<Wavefront.Object> */
   GHashTable *models;
+
+  /* HashTable<Chess3d.GameObject> */
+  GHashTable *game_objects;
 
   Chess3dCamera *camera;
 } ChessView3dPrivate;
@@ -20,6 +25,8 @@ G_DEFINE_TYPE_WITH_PRIVATE (ChessView3d, chess_view3d, GTK_TYPE_GL_AREA)
 
 enum {
 	PROP_0,
+  PROP_MODELS,
+  PROP_CAMERA,
 	N_PROPS
 };
 
@@ -47,9 +54,17 @@ chess_view3d_get_property (GObject    *object,
                            GParamSpec *pspec)
 {
 	ChessView3d *self = CHESS_VIEW3D (object);
+  ChessView3dPrivate *priv = chess_view3d_get_instance_private (self);
 
 	switch (prop_id)
 	  {
+    case PROP_MODELS:
+      g_hash_table_ref (priv->models);
+      g_value_set_boxed (value, priv->models);
+      break;
+    case PROP_CAMERA:
+      g_value_set_object (value, priv->camera);
+      break;
 	  default:
 	    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 	  }
@@ -78,6 +93,24 @@ chess_view3d_class_init (ChessView3dClass *klass)
 	object_class->finalize = chess_view3d_finalize;
 	object_class->get_property = chess_view3d_get_property;
 	object_class->set_property = chess_view3d_set_property;
+
+  properties [PROP_MODELS] =
+    g_param_spec_boxed ("models",
+                        "Models",
+                        "Models",
+                        G_TYPE_HASH_TABLE,
+                        (G_PARAM_READABLE |
+                         G_PARAM_STATIC_STRINGS));
+
+  properties [PROP_CAMERA] =
+    g_param_spec_object ("camera",
+                         "Camera",
+                         "Camera",
+                         CHESS3D_TYPE_CAMERA,
+                         (G_PARAM_READABLE |
+                          G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_properties (object_class, N_PROPS, properties);
 }
 
 static gboolean
@@ -150,47 +183,32 @@ realize (GtkWidget *self)
   shader_program_set_vec3 (priv->glsl_program, "lightDirection", vec3 (0.f, 1.f, 0.f));
 
   /* load pawn */
-  struct Obj3D *pawn_obj;
+  WavefrontObject *pawn_obj;
+  const gchar *name;
 
-  pawn_obj = load_OBJ ("/org/gnome/chess/3d/pieces/pawn.obj", &error);
+  pawn_obj = wavefront_object_new ("/org/gnome/chess/3d/pieces/pawn.obj", &error);
 
   if (error) {
     g_error ("failed to load pawn: %s", error->message);
     return;
   }
 
-  /* create VAO */
-  glGenVertexArrays(1, &pawn_obj->vao);
-  glBindVertexArray(pawn_obj->vao);
+  wavefront_object_generate_buffers (pawn_obj);
+  wavefront_object_hook_shader_attributes (pawn_obj, priv->glsl_program);
 
-  /* generate VBO */
-  glGenBuffers(1, &pawn_obj->vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, pawn_obj->vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(pawn_obj->verts[0]) * pawn_obj->num_tris,
-               &pawn_obj->verts[0], GL_STATIC_DRAW);
+  name = wavefront_object_get_name (pawn_obj);
+  g_hash_table_insert (priv->models, g_strdup (name), g_object_ref_sink (pawn_obj));
 
-  /* now we set up some inputs to the vertex shader */
-  GLint attribPtr;
+  Chess3dModel *model;
+  Chess3dGameObject *pawn;
 
-  attribPtr = glGetAttribLocation (priv->glsl_program, "position");
-  glEnableVertexAttribArray (attribPtr);
-  glVertexAttribPointer (attribPtr, 3 /* 3 floats = x,y,z */,
-                         GL_FLOAT, GL_FALSE, sizeof (pawn_obj->verts[0][0]),
-                         0 /* offset of the vec3 */);
+  model = chess3d_model_new (pawn_obj);
+  pawn = chess3d_game_object_new ("Pawn");
 
-  attribPtr = glGetAttribLocation (priv->glsl_program, "texcoord");
-  glEnableVertexAttribArray (attribPtr);
-  glVertexAttribPointer (attribPtr, 2 /* 2 floats = u,v */,
-                         GL_FLOAT, GL_FALSE, sizeof (pawn_obj->verts[0][0]),
-                         (void *)(3 * sizeof (pawn_obj->verts[0][0][0])) /* offset of the UV elements */);
+  chess3d_game_object_set_model (pawn, model);
+  name = chess3d_game_object_get_name (pawn);
 
-  attribPtr = glGetAttribLocation (priv->glsl_program, "normal");
-  glEnableVertexAttribArray (attribPtr);
-  glVertexAttribPointer (attribPtr, 3 /* 3 floats = x,y,z */,
-                         GL_FLOAT, GL_FALSE, sizeof (pawn_obj->verts[0][0]),
-                         (void *)(5 * sizeof (pawn_obj->verts[0][0][0])) /* offset of the normal vector elements */);
-
-  g_hash_table_insert (priv->models, pawn_obj->name, pawn_obj);
+  g_hash_table_insert (priv->game_objects, g_strdup (name), g_object_ref_sink (pawn));
 
   gtk_widget_add_tick_callback (self, queue_render, NULL, NULL);
 }
@@ -222,17 +240,19 @@ render (GtkGLArea    *area,
   glClearColor (0.2f, 0.2f, 0.2f, 1.f);
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  g_hash_table_iter_init (&iter, priv->models);
+  g_hash_table_iter_init (&iter, priv->game_objects);
   while (g_hash_table_iter_next (&iter, &key, &val)) {
-    struct Obj3D *obj = val;
+    Chess3dGameObject *game_obj = CHESS3D_GAME_OBJECT (val);
+    Chess3dModel *model;
 
-    glBindVertexArray(obj->vao);
+    if ((model = chess3d_game_object_get_model (game_obj))) {
+      priv->model = m4_mul (priv->model, m4_rotation_y (M_PI / 180));
 
-    priv->model = m4_mul (priv->model, m4_rotation_y (M_PI / 180));
+      shader_program_set_mat4 (priv->glsl_program, "model", priv->model);
+      shader_program_set_vec3 (priv->glsl_program, "overrideColor", vec3 (1.f,1.f,1.f));
 
-    shader_program_set_mat4 (priv->glsl_program, "model", priv->model);
-    shader_program_set_vec3 (priv->glsl_program, "overrideColor", vec3 (1.f,1.f,1.f));
-    glDrawArrays (GL_TRIANGLES, 0, (sizeof (obj->verts[0]) * obj->num_tris)  / sizeof (obj->verts[0][0]));
+      wavefront_object_render (chess3d_model_get_object (model));
+    }
   }
 
   glDisable (GL_DEPTH_TEST);
@@ -298,7 +318,8 @@ chess_view3d_init (ChessView3d *self)
 
   priv = chess_view3d_get_instance_private (self);
 
-  priv->models = g_hash_table_new (g_str_hash, g_str_equal);
+  priv->models = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
+  priv->game_objects = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
   priv->camera = chess3d_camera_new (60.f, 1.f, 100.f);
   chess3d_game_object_set_position ((Chess3dGameObject *) priv->camera, vec3 (0, 0, -4));
 

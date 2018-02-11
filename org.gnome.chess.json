@@ -1,46 +1,54 @@
 {
-    "app-id": "org.gnome.chess",
-    "runtime": "org.gnome.Platform",
-    "runtime-version": "master",
-    "sdk": "org.gnome.Sdk",
-    "command": "gnome-chess",
-    "tags": ["nightly"],
-    "copy-icon": true,
-    "rename-icon": "gnome-chess",
-    "rename-desktop-file": "gnome-chess.desktop",
-    "desktop-file-name-prefix": "(Nightly) ",
-    "finish-args": [
-        /* X11 + XShm access */
-        "--share=ipc", "--socket=x11",
-        /* Wayland access */
+    "app-id" : "org.gnome.chess",
+    "runtime" : "org.gnome.Platform",
+    "runtime-version" : "master",
+    "sdk" : "org.gnome.Sdk",
+    "command" : "gnome-chess",
+    "tags" : [
+        "nightly"
+    ],
+    "copy-icon" : true,
+    "rename-icon" : "gnome-chess",
+    "rename-desktop-file" : "gnome-chess.desktop",
+    "desktop-file-name-prefix" : "(Nightly) ",
+    "finish-args" : [
+        "--share=ipc",
+        "--socket=x11",
         "--socket=wayland",
         "--device=dri",
-        /* dconf */
-        "--filesystem=xdg-run/dconf", "--filesystem=~/.config/dconf:ro",
-        "--talk-name=ca.desrt.dconf", "--env=DCONF_USER_CONFIG_DIR=.config/dconf"
+        "--filesystem=xdg-run/dconf",
+        "--filesystem=~/.config/dconf:ro",
+        "--talk-name=ca.desrt.dconf",
+        "--env=DCONF_USER_CONFIG_DIR=.config/dconf"
     ],
-    "build-options": {
-        "cflags": "-O2 -g"
+    "build-options" : {
+        "cflags" : "-O2 -g",
+        "env" : {
+        }
     },
-    "cleanup": ["/share/gnuchess", "/share/info", "/share/man"],
-    "modules": [
+    "cleanup" : [
+        "/share/gnuchess",
+        "/share/info",
+        "/share/man"
+    ],
+    "modules" : [
         {
-            "name": "gnuchess",
-            "sources": [
+            "name" : "gnuchess",
+            "sources" : [
                 {
-                    "type": "archive",
-                    "url": "https://ftpmirror.gnu.org/chess/gnuchess-6.2.3.tar.gz",
-                    "sha256": "78999176b2f2b5e0325bcc69749b7b2cefb7b1ef4f02d101fa77ae24a1b31b82"
+                    "type" : "archive",
+                    "url" : "https://ftpmirror.gnu.org/chess/gnuchess-6.2.3.tar.gz",
+                    "sha256" : "78999176b2f2b5e0325bcc69749b7b2cefb7b1ef4f02d101fa77ae24a1b31b82"
                 }
             ]
         },
         {
-            "name": "gnome-chess",
-            "buildsystem": "meson",
-            "sources": [
+            "name" : "gnome-chess",
+            "buildsystem" : "meson",
+            "sources" : [
                 {
-                    "type": "git",
-                    "url": "https://git.gnome.org/browse/gnome-chess"
+                    "type" : "git",
+                    "url" : "https://github.com/Prince781/gnome-chess"
                 }
             ]
         }

@@ -1,25 +1,32 @@
 #include "chess3d-model.h"
-#include "../gl-util.h"
+#include "wavefront-object.h"
+#include <epoxy/gl.h>
+#include "vec3.h"
 
 typedef struct
 {
-  struct Obj3D *model;
+  WavefrontObject *object;
+  vec3_t color;
 } Chess3dModelPrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE (Chess3dModel, chess3d_model, CHESS3D_TYPE_GAME_OBJECT)
+G_DEFINE_TYPE_WITH_PRIVATE (Chess3dModel, chess3d_model, G_TYPE_INITIALLY_UNOWNED)
 
 enum {
   PROP_0,
+  PROP_OBJECT,
+  PROP_COLOR,
   N_PROPS
 };
 
 static GParamSpec *properties [N_PROPS];
 
 Chess3dModel *
-chess3d_model_new (const char *name)
+chess3d_model_new (WavefrontObject *object)
 {
+  g_return_val_if_fail (object != NULL, NULL);
+
   return g_object_new (CHESS3D_TYPE_MODEL,
-                       "name", name,
+                       "object", object,
                        NULL);
 }
 
@@ -32,6 +39,29 @@ chess3d_model_finalize (GObject *object)
   G_OBJECT_CLASS (chess3d_model_parent_class)->finalize (object);
 }
 
+WavefrontObject *
+chess3d_model_get_object (Chess3dModel *self)
+{
+  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
+
+  return priv->object;
+}
+
+void chess3d_model_set_color (Chess3dModel *self,
+                              vec3_t        color)
+{
+  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
+
+  priv->color = vec3(CLAMP (color.x, 0, 1), CLAMP (color.y, 0, 1), CLAMP (color.z, 0, 1));
+}
+
+vec3_t chess3d_model_get_color (Chess3dModel *self)
+{
+  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
+
+  return priv->color;
+}
+
 static void
 chess3d_model_get_property (GObject    *object,
                             guint       prop_id,
@@ -42,6 +72,13 @@ chess3d_model_get_property (GObject    *object,
 
   switch (prop_id)
     {
+    case PROP_OBJECT:
+      g_value_set_object (value, chess3d_model_get_object (self));
+      break;
+    case PROP_COLOR: {
+      vec3_t color = chess3d_model_get_color (self);
+      g_value_set_boxed (value, &color);
+    } break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -54,9 +91,16 @@ chess3d_model_set_property (GObject      *object,
                             GParamSpec   *pspec)
 {
   Chess3dModel *self = CHESS3D_MODEL (object);
+  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
 
   switch (prop_id)
     {
+    case PROP_OBJECT:
+      priv->object = g_value_get_object (value);
+      break;
+    case PROP_COLOR: {
+      chess3d_model_set_color (self, *(vec3_t *) g_value_get_boxed (value));
+    } break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -70,9 +114,31 @@ chess3d_model_class_init (Chess3dModelClass *klass)
   object_class->finalize = chess3d_model_finalize;
   object_class->get_property = chess3d_model_get_property;
   object_class->set_property = chess3d_model_set_property;
+
+  properties [PROP_OBJECT] =
+    g_param_spec_object ("object",
+                         "Object",
+                         "The Wavefront object that is loaded",
+                         WAVEFRONT_TYPE_OBJECT,
+                         (G_PARAM_READWRITE |
+                          G_PARAM_CONSTRUCT_ONLY |
+                          G_PARAM_STATIC_STRINGS));
+
+  properties [PROP_COLOR] =
+    g_param_spec_boxed ("color",
+                        "Color",
+                        "Color",
+                        VEC3_TYPE,
+                        (G_PARAM_READWRITE |
+                         G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_properties (object_class, N_PROPS, properties);
 }
 
 static void
 chess3d_model_init (Chess3dModel *self)
 {
+  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
+
+  priv->color = vec3(1, 1, 1);
 }
