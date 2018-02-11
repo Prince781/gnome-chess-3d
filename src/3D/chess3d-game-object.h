@@ -30,6 +30,21 @@ vec3_t chess3d_game_object_get_rotation (Chess3dGameObject *self);
 void chess3d_game_object_set_rotation (Chess3dGameObject *self,
                                        vec3_t             rotation);
 
+void chess3d_game_object_translate (Chess3dGameObject *self,
+                                    vec3_t             translation);
+
+void chess3d_game_object_rotate (Chess3dGameObject *self,
+                                 vec3_t             rotation);
+
+/**
+ * chess3d_game_object_get_model_matrix:
+ *
+ * Gets the model matrix of the game object.
+ *
+ * Returns:
+ */
+mat4_t chess3d_game_object_get_model_matrix (Chess3dGameObject *self);
+
 Chess3dModel *chess3d_game_object_get_model (Chess3dGameObject *self);
 
 void chess3d_game_object_set_model (Chess3dGameObject *self,

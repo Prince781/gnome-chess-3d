@@ -25,8 +25,6 @@ typedef struct
   GLuint glsl_program;
   GLuint vshader, fshader;
 
-  mat4_t model;
-
   /* HashTable<Wavefront.Object> */
   GHashTable *models;
 
@@ -156,8 +154,6 @@ realize (GtkWidget *self)
   gtk_gl_area_set_has_depth_buffer (GTK_GL_AREA(self), TRUE);
   gtk_gl_area_set_has_stencil_buffer (GTK_GL_AREA(self), TRUE);
 
-  priv->model = m4_rotation(0, vec3(0.0f,1.0f,0.0f));
-
   /* load shaders */
   priv->vshader = shader_new ("/org/gnome/chess/3d/shaders/shader.glslv",
                               GL_VERTEX_SHADER, &error);
@@ -266,10 +262,9 @@ render (GtkGLArea    *area,
     Chess3dModel *model;
 
     if ((model = chess3d_game_object_get_model (game_obj))) {
-      priv->model = m4_mul (priv->model, m4_rotation_y (M_PI / 180));
+      chess3d_game_object_rotate (game_obj, vec3 (0, M_PI/180, 0));
 
-      shader_program_set_mat4 (priv->glsl_program, "model", priv->model);
-
+      shader_program_set_mat4 (priv->glsl_program, "model", chess3d_game_object_get_model_matrix (game_obj));
       chess3d_model_render (model, priv->glsl_program);
     }
   }

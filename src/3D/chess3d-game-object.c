@@ -8,6 +8,8 @@ typedef struct
   vec3_t position;
   vec3_t rotation;
   Chess3dModel *model;
+  mat4_t model_matrix;
+  bool has_to_recompute;
 } Chess3dGameObjectPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (Chess3dGameObject, chess3d_game_object, G_TYPE_INITIALLY_UNOWNED)
@@ -17,6 +19,7 @@ enum {
   PROP_NAME,
   PROP_POSITION,
   PROP_ROTATION,
+  PROP_MODEL_MATRIX,
   PROP_MODEL,
   N_PROPS
 };
@@ -61,6 +64,10 @@ chess3d_game_object_get_property (GObject    *object,
     case PROP_ROTATION: {
       vec3_t rot = chess3d_game_object_get_rotation (self);
       g_value_set_boxed (value, &rot);
+    } break;
+    case PROP_MODEL_MATRIX: {
+      mat4_t mm = chess3d_game_object_get_model_matrix (self);
+      g_value_set_boxed (value, &mm);
     } break;
     case PROP_MODEL:
       g_value_set_object (value, chess3d_game_object_get_model (self));
@@ -128,6 +135,14 @@ chess3d_game_object_class_init (Chess3dGameObjectClass *klass)
                         VEC3_TYPE,
                         G_PARAM_READWRITE);
 
+  properties [PROP_MODEL_MATRIX] =
+    g_param_spec_boxed ("model-matrix",
+                        "ModelMatrix",
+                        "Model matrix",
+                        MAT4_TYPE,
+                        (G_PARAM_READABLE |
+                         G_PARAM_STATIC_STRINGS));
+
   properties [PROP_MODEL] =
     g_param_spec_object ("model",
                          "Model",
@@ -147,6 +162,7 @@ chess3d_game_object_init (Chess3dGameObject *self)
   priv->name = g_string_new ("Untitled");
   priv->position = vec3 (0, 0, 0);
   priv->rotation = vec3 (0, 0, 0);
+  priv->has_to_recompute = true;
 }
 
 const gchar *
@@ -156,6 +172,20 @@ chess3d_game_object_get_name (Chess3dGameObject *self)
   Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
 
   return priv->name->str;
+}
+
+static void
+recompute_model_matrix (Chess3dGameObject *self)
+{
+  Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
+
+  priv->model_matrix = m4_rotation (0, vec3 (0, 1, 0));
+  priv->model_matrix = m4_mul (priv->model_matrix, m4_rotation_x (priv->rotation.x));
+  priv->model_matrix = m4_mul (priv->model_matrix, m4_rotation_y (priv->rotation.y));
+  priv->model_matrix = m4_mul (priv->model_matrix, m4_rotation_z (priv->rotation.z));
+  priv->model_matrix = m4_mul (priv->model_matrix, m4_translation (priv->position));
+
+  priv->has_to_recompute = false;
 }
 
 vec3_t
@@ -175,6 +205,7 @@ chess3d_game_object_set_position (Chess3dGameObject *self,
   Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
 
   priv->position = position;
+  priv->has_to_recompute = true;
 }
 
 vec3_t
@@ -190,10 +221,38 @@ void
 chess3d_game_object_set_rotation (Chess3dGameObject *self,
                                   vec3_t             rotation)
 {
-  g_warn_if_fail (self);
+  g_return_if_fail (self);
   Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
 
   priv->rotation = rotation;
+  priv->has_to_recompute = true;
+}
+
+void chess3d_game_object_translate (Chess3dGameObject *self,
+                                    vec3_t             translation)
+{
+  Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
+
+  chess3d_game_object_set_position (self, v3_add (priv->position, translation));
+}
+
+void chess3d_game_object_rotate (Chess3dGameObject *self,
+                                 vec3_t             rotation)
+{
+  Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
+
+  chess3d_game_object_set_rotation (self, v3_add (priv->rotation, rotation));
+}
+
+mat4_t
+chess3d_game_object_get_model_matrix (Chess3dGameObject *self)
+{
+  Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
+
+  if (priv->has_to_recompute)
+    recompute_model_matrix (self);
+
+  return priv->model_matrix;
 }
 
 Chess3dModel *
