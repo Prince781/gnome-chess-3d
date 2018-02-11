@@ -33,6 +33,8 @@ typedef struct
 
   Chess3dCamera *camera;
 
+  vec3_t init_mousedown;
+
   int num_lights;
   Light lights[MAX_LIGHTS];
 } ChessView3dPrivate;
@@ -281,38 +283,58 @@ unrealize (GtkWidget *self)
 }
 
 static gboolean
-mousedown_cb (GtkWidget *self,
-              GdkEvent  *event)
+mousedown_cb (ChessView3d *self,
+              GdkEvent    *event)
 {
   GdkEventButton *evb;
   GdkEventMotion *evm;
+  ChessView3dPrivate *priv = chess_view3d_get_instance_private (self);
+  int width, height;
 
+  width = gtk_widget_get_allocated_width (GTK_WIDGET (self));
+  height = gtk_widget_get_allocated_height (GTK_WIDGET (self));
   evb = &event->button;
   evm = &event->motion;
 
-  g_debug ("mousedown event (%lf, %lf)!", evm->x, evm->y);
+  priv->init_mousedown = vec3 (evm->x / width, evm->y / height, 0);
+
+  g_debug ("mousedown event (%lf, %lf) -> vec2(%f, %f)!",
+           evm->x, evm->y,
+           priv->init_mousedown.x, priv->init_mousedown.y);
 
   return TRUE;
 }
 
 static gboolean
-mousemove_cb (GtkWidget *self,
-              GdkEvent  *event)
+mousemove_cb (ChessView3d *self,
+              GdkEvent    *event)
 {
   GdkEventButton *evb;
   GdkEventMotion *evm;
+  ChessView3dPrivate *priv = chess_view3d_get_instance_private (self);
+  int width, height;
+  vec3_t d;
 
+  width = gtk_widget_get_allocated_width (GTK_WIDGET (self));
+  height = gtk_widget_get_allocated_height (GTK_WIDGET (self));
   evb = &event->button;
   evm = &event->motion;
 
-  g_debug ("mousemove event (%lf, %lf)!", evm->x, evm->y);
+  d = vec3 (evm->x / width, evm->y / height, 0);
+  d = v3_sub (d, priv->init_mousedown);
+  g_debug ("mousemove event (%lf, %lf) -> vec2(%f, %f)!",
+           evm->x, evm->y,
+           d.x, d.y);
+
+  d = vec3 (d.y, 0, d.x);
+  chess3d_game_object_set_rotation (CHESS3D_GAME_OBJECT (priv->camera), v3_muls (d, M_PI/60));
 
   return TRUE;
 }
 
 static gboolean
-mouseup_cb (GtkWidget *self,
-            GdkEvent  *event)
+mouseup_cb (ChessView3d *self,
+            GdkEvent    *event)
 {
   GdkEventButton *evb;
   GdkEventMotion *evm;
@@ -335,7 +357,7 @@ chess_view3d_init (ChessView3d *self)
   priv->models = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
   priv->game_objects = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
   priv->camera = chess3d_camera_new (60.f, 1.f, 100.f);
-  chess3d_game_object_set_position ((Chess3dGameObject *) priv->camera, vec3 (0, 0, -4));
+  chess3d_game_object_set_position (CHESS3D_GAME_OBJECT (priv->camera), vec3 (0, 0, -4));
 
   gtk_widget_set_events (GTK_WIDGET (self),
                          GDK_BUTTON_PRESS_MASK | GDK_BUTTON_MOTION_MASK
