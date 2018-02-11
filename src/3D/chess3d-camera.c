@@ -135,13 +135,13 @@ chess3d_camera_init (Chess3dCamera *self)
 void chess3d_camera_set_fov (Chess3dCamera *self,
                              float          fov)
 {
-  g_warn_if_fail (self);
+  g_return_if_fail (CHESS3D_IS_CAMERA (self));
   Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
   priv->fov = fov;
 }
 
 float chess3d_camera_get_fov (Chess3dCamera *self) {
-  g_return_val_if_fail (self, 0);
+  g_return_val_if_fail (CHESS3D_IS_CAMERA (self), 0);
   Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
   return priv->fov;
 }
@@ -149,14 +149,14 @@ float chess3d_camera_get_fov (Chess3dCamera *self) {
 void chess3d_camera_set_near (Chess3dCamera *self,
                               float          near)
 {
-  g_warn_if_fail (self);
+  g_return_if_fail (CHESS3D_IS_CAMERA (self));
   Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
   priv->near = near;
 }
 
 float chess3d_camera_get_near (Chess3dCamera *self)
 {
-  g_return_val_if_fail (self, 0);
+  g_return_val_if_fail (CHESS3D_IS_CAMERA (self), 0);
   Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
   return priv->near;
 }
@@ -164,7 +164,7 @@ float chess3d_camera_get_near (Chess3dCamera *self)
 void chess3d_camera_set_far (Chess3dCamera *self,
                              float          far)
 {
-  g_warn_if_fail (self);
+  g_return_if_fail (CHESS3D_IS_CAMERA (self));
   Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
   priv->far = far;
 }
@@ -178,7 +178,7 @@ float chess3d_camera_get_far (Chess3dCamera *self)
 
 mat4_t chess3d_camera_get_view (Chess3dCamera *self)
 {
-  g_return_val_if_fail (self, (mat4_t){});
+  g_return_val_if_fail (CHESS3D_IS_CAMERA (self), (mat4_t){});
   Chess3dGameObject *game_object = CHESS3D_GAME_OBJECT (self);
   vec3_t position = chess3d_game_object_get_position (game_object);
   vec3_t rotation = chess3d_game_object_get_rotation (game_object);
@@ -200,7 +200,7 @@ mat4_t chess3d_camera_get_view (Chess3dCamera *self)
 mat4_t chess3d_camera_get_projection (Chess3dCamera *self,
                                        float          aspect_ratio)
 {
-  g_return_val_if_fail (self, (mat4_t) {});
+  g_return_val_if_fail (CHESS3D_IS_CAMERA (self), (mat4_t) {});
   Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
   return m4_perspective (priv->fov, aspect_ratio, priv->near, priv->far);
 }

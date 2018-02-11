@@ -124,7 +124,7 @@ chess3d_model_init (Chess3dModel *self)
 WavefrontObject *
 chess3d_model_get_object (Chess3dModel *self)
 {
-  g_return_val_if_fail (self, NULL);
+  g_return_val_if_fail (CHESS3D_IS_MODEL (self), NULL);
   Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
 
   return priv->object;
@@ -133,7 +133,7 @@ chess3d_model_get_object (Chess3dModel *self)
 void chess3d_model_set_color (Chess3dModel *self,
                               vec3_t        color)
 {
-  g_return_if_fail (self);
+  g_return_if_fail (CHESS3D_IS_MODEL (self));
   Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
 
   priv->color = vec3(CLAMP (color.x, 0, 1), CLAMP (color.y, 0, 1), CLAMP (color.z, 0, 1));
@@ -141,7 +141,7 @@ void chess3d_model_set_color (Chess3dModel *self,
 
 vec3_t chess3d_model_get_color (Chess3dModel *self)
 {
-  g_return_val_if_fail (self, vec3 (0, 0, 0));
+  g_return_val_if_fail (CHESS3D_IS_MODEL (self), vec3 (0, 0, 0));
   Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
 
   return priv->color;
@@ -150,7 +150,7 @@ vec3_t chess3d_model_get_color (Chess3dModel *self)
 void chess3d_model_render (Chess3dModel *self,
                            GLuint        program)
 {
-  g_return_if_fail (self);
+  g_return_if_fail (CHESS3D_IS_MODEL (self));
   Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
 
   shader_program_set_vec3 (program, "overrideColor", priv->color);
