@@ -152,6 +152,7 @@ chess3d_game_object_init (Chess3dGameObject *self)
 const gchar *
 chess3d_game_object_get_name (Chess3dGameObject *self)
 {
+  g_return_val_if_fail (self, NULL);
   Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
 
   return priv->name->str;
@@ -160,6 +161,7 @@ chess3d_game_object_get_name (Chess3dGameObject *self)
 vec3_t
 chess3d_game_object_get_position (Chess3dGameObject *self)
 {
+  g_return_val_if_fail (self, vec3 (0, 0, 0));
   Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
 
   return priv->position;
@@ -169,6 +171,7 @@ void
 chess3d_game_object_set_position (Chess3dGameObject *self,
                                   vec3_t             position)
 {
+  g_warn_if_fail (self);
   Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
 
   priv->position = position;
@@ -177,6 +180,7 @@ chess3d_game_object_set_position (Chess3dGameObject *self,
 vec3_t
 chess3d_game_object_get_rotation (Chess3dGameObject *self)
 {
+  g_return_val_if_fail (self, vec3 (0, 0, 0));
   Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
 
   return priv->rotation;
@@ -186,6 +190,7 @@ void
 chess3d_game_object_set_rotation (Chess3dGameObject *self,
                                   vec3_t             rotation)
 {
+  g_warn_if_fail (self);
   Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
 
   priv->rotation = rotation;
@@ -194,6 +199,7 @@ chess3d_game_object_set_rotation (Chess3dGameObject *self,
 Chess3dModel *
 chess3d_game_object_get_model (Chess3dGameObject *self)
 {
+  g_return_val_if_fail (self, NULL);
   Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
 
   return priv->model;
@@ -203,6 +209,7 @@ void
 chess3d_game_object_set_model (Chess3dGameObject *self,
                                Chess3dModel      *model)
 {
+  g_return_if_fail (self);
   Chess3dGameObjectPrivate *priv = chess3d_game_object_get_instance_private (self);
 
   priv->model = g_object_ref_sink (model);

@@ -39,29 +39,6 @@ chess3d_model_finalize (GObject *object)
   G_OBJECT_CLASS (chess3d_model_parent_class)->finalize (object);
 }
 
-WavefrontObject *
-chess3d_model_get_object (Chess3dModel *self)
-{
-  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
-
-  return priv->object;
-}
-
-void chess3d_model_set_color (Chess3dModel *self,
-                              vec3_t        color)
-{
-  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
-
-  priv->color = vec3(CLAMP (color.x, 0, 1), CLAMP (color.y, 0, 1), CLAMP (color.z, 0, 1));
-}
-
-vec3_t chess3d_model_get_color (Chess3dModel *self)
-{
-  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
-
-  return priv->color;
-}
-
 static void
 chess3d_model_get_property (GObject    *object,
                             guint       prop_id,
@@ -141,4 +118,30 @@ chess3d_model_init (Chess3dModel *self)
   Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
 
   priv->color = vec3(1, 1, 1);
+}
+
+WavefrontObject *
+chess3d_model_get_object (Chess3dModel *self)
+{
+  g_return_val_if_fail (self, NULL);
+  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
+
+  return priv->object;
+}
+
+void chess3d_model_set_color (Chess3dModel *self,
+                              vec3_t        color)
+{
+  g_return_if_fail (self);
+  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
+
+  priv->color = vec3(CLAMP (color.x, 0, 1), CLAMP (color.y, 0, 1), CLAMP (color.z, 0, 1));
+}
+
+vec3_t chess3d_model_get_color (Chess3dModel *self)
+{
+  g_return_val_if_fail (self, vec3 (0, 0, 0));
+  Chess3dModelPrivate *priv = chess3d_model_get_instance_private (self);
+
+  return priv->color;
 }

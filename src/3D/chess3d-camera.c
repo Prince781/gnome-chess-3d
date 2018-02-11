@@ -39,71 +39,6 @@ chess3d_camera_finalize (GObject *object)
   G_OBJECT_CLASS (chess3d_camera_parent_class)->finalize (object);
 }
 
-void chess3d_camera_set_fov (Chess3dCamera *self,
-                             float          fov)
-{
-  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
-  priv->fov = fov;
-}
-
-float chess3d_camera_get_fov (Chess3dCamera *self) {
-  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
-  return priv->fov;
-}
-
-void chess3d_camera_set_near (Chess3dCamera *self,
-                              float          near)
-{
-  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
-  priv->near = near;
-}
-
-float chess3d_camera_get_near (Chess3dCamera *self)
-{
-  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
-  return priv->near;
-}
-
-void chess3d_camera_set_far (Chess3dCamera *self,
-                             float          far)
-{
-  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
-  priv->far = far;
-}
-
-float chess3d_camera_get_far (Chess3dCamera *self)
-{
-  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
-  return priv->far;
-}
-
-mat4_t chess3d_camera_get_view (Chess3dCamera *self)
-{
-  Chess3dGameObject *game_object = CHESS3D_GAME_OBJECT (self);
-  vec3_t position = chess3d_game_object_get_position (game_object);
-  vec3_t rotation = chess3d_game_object_get_rotation (game_object);
-  vec3_t up = vec3(0, 1, 0);
-  mat4_t rot_x = m4_rotation_x (rotation.x),
-         rot_y = m4_rotation_y (rotation.y),
-         rot_z = m4_rotation_z (rotation.z);
-  vec3_t dir = m4_mul_dir (m4_mul (m4_mul (rot_x, rot_y), rot_z), up);
-
-  /* view matrix:
-   * arg1 = position of camera
-   * arg2 = center of view
-   * arg3 = direction up. Note that because UP is along the y-axis, this causes
-   * (x,z)-plane to be perpendicular to "up"
-   */
-  return m4_look_at (position, dir, up);
-}
-
-mat4_t chesss3d_camera_get_projection (Chess3dCamera *self,
-                                       float          aspect_ratio)
-{
-  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
-  return m4_perspective (priv->fov, aspect_ratio, priv->near, priv->far);
-}
-
 static void
 chess3d_camera_get_property (GObject    *object,
                              guint       prop_id,
@@ -195,4 +130,77 @@ chess3d_camera_init (Chess3dCamera *self)
   priv->fov = 60.f;
   priv->near = 1.f;
   priv->far = 1000.f;
+}
+
+void chess3d_camera_set_fov (Chess3dCamera *self,
+                             float          fov)
+{
+  g_warn_if_fail (self);
+  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
+  priv->fov = fov;
+}
+
+float chess3d_camera_get_fov (Chess3dCamera *self) {
+  g_return_val_if_fail (self, 0);
+  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
+  return priv->fov;
+}
+
+void chess3d_camera_set_near (Chess3dCamera *self,
+                              float          near)
+{
+  g_warn_if_fail (self);
+  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
+  priv->near = near;
+}
+
+float chess3d_camera_get_near (Chess3dCamera *self)
+{
+  g_return_val_if_fail (self, 0);
+  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
+  return priv->near;
+}
+
+void chess3d_camera_set_far (Chess3dCamera *self,
+                             float          far)
+{
+  g_warn_if_fail (self);
+  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
+  priv->far = far;
+}
+
+float chess3d_camera_get_far (Chess3dCamera *self)
+{
+  g_return_val_if_fail (self, 0);
+  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
+  return priv->far;
+}
+
+mat4_t chess3d_camera_get_view (Chess3dCamera *self)
+{
+  g_return_val_if_fail (self, (mat4_t){});
+  Chess3dGameObject *game_object = CHESS3D_GAME_OBJECT (self);
+  vec3_t position = chess3d_game_object_get_position (game_object);
+  vec3_t rotation = chess3d_game_object_get_rotation (game_object);
+  vec3_t up = vec3(0, 1, 0);
+  mat4_t rot_x = m4_rotation_x (rotation.x),
+         rot_y = m4_rotation_y (rotation.y),
+         rot_z = m4_rotation_z (rotation.z);
+  vec3_t dir = m4_mul_dir (m4_mul (m4_mul (rot_x, rot_y), rot_z), up);
+
+  /* view matrix:
+   * arg1 = position of camera
+   * arg2 = center of view
+   * arg3 = direction up. Note that because UP is along the y-axis, this causes
+   * (x,z)-plane to be perpendicular to "up"
+   */
+  return m4_look_at (position, dir, up);
+}
+
+mat4_t chesss3d_camera_get_projection (Chess3dCamera *self,
+                                       float          aspect_ratio)
+{
+  g_return_val_if_fail (self, (mat4_t) {});
+  Chess3dCameraPrivate *priv = chess3d_camera_get_instance_private (self);
+  return m4_perspective (priv->fov, aspect_ratio, priv->near, priv->far);
 }

@@ -330,6 +330,7 @@ wavefront_object_get_location (WavefrontObject *self)
 const gchar *
 wavefront_object_get_name (WavefrontObject *self)
 {
+  g_return_val_if_fail (self, NULL);
   WavefrontObjectPrivate *priv = wavefront_object_get_instance_private (self);
 
   return priv->name;
@@ -337,6 +338,7 @@ wavefront_object_get_name (WavefrontObject *self)
 
 void wavefront_object_generate_buffers (WavefrontObject *self)
 {
+  g_return_if_fail (self);
   WavefrontObjectPrivate *priv = wavefront_object_get_instance_private (self);
 
   if (priv->genbuffers)
@@ -355,6 +357,7 @@ void wavefront_object_generate_buffers (WavefrontObject *self)
 void wavefront_object_hook_shader_attributes (WavefrontObject *self,
                                               GLuint           program)
 {
+  g_return_if_fail (self);
   WavefrontObjectPrivate *priv = wavefront_object_get_instance_private (self);
   GLint attribPtr;
 
@@ -384,6 +387,7 @@ void wavefront_object_hook_shader_attributes (WavefrontObject *self,
 
 void wavefront_object_render (WavefrontObject *self)
 {
+  g_return_if_fail (self);
   WavefrontObjectPrivate *priv = wavefront_object_get_instance_private (self);
 
   glDrawArrays (GL_TRIANGLES, 0, (sizeof (priv->verts[0]) * priv->num_tris)  / sizeof (priv->verts[0][0]));
@@ -391,6 +395,7 @@ void wavefront_object_render (WavefrontObject *self)
 
 GLuint wavefront_object_get_vao (WavefrontObject *self)
 {
+  g_return_val_if_fail (self, 0);
   WavefrontObjectPrivate *priv = wavefront_object_get_instance_private (self);
 
   return priv->vao;
@@ -398,6 +403,7 @@ GLuint wavefront_object_get_vao (WavefrontObject *self)
 
 GLuint wavefront_object_get_vbo (WavefrontObject *self)
 {
+  g_return_val_if_fail (self, 0);
   WavefrontObjectPrivate *priv = wavefront_object_get_instance_private (self);
 
   return priv->vbo;
