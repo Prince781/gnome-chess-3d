@@ -5,6 +5,21 @@
 #include "3D/chess3d-camera.h"
 #include "3D/wavefront-object.h"
 
+#define MAX_LIGHTS  100
+
+typedef enum {
+  LIGHT_DIRECTIONAL = 0,
+  LIGHT_POINT       = 1
+} LightType;
+
+typedef struct {
+  float intensity;
+  vec3_t color;
+  float radius;
+  LightType type;
+  vec3_t position;
+} Light;
+
 typedef struct
 {
   GLuint glsl_program;
@@ -19,7 +34,12 @@ typedef struct
   GHashTable *game_objects;
 
   Chess3dCamera *camera;
+
+  int num_lights;
+  Light lights[MAX_LIGHTS];
 } ChessView3dPrivate;
+
+/* TODO: multiple lights */
 
 G_DEFINE_TYPE_WITH_PRIVATE (ChessView3d, chess_view3d, GTK_TYPE_GL_AREA)
 
